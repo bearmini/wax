@@ -5,7 +5,7 @@ set -e
 
 export GO111MODULE=on
 USE_DOCKER_TINYGO=0
-TINYGO_VERSION=0.4.1
+TINYGO_VERSION=0.8.0
 
 tinygo_available() {
   command -v tinygo > /dev/null 2>&1 && {
