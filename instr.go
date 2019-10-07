@@ -100,6 +100,9 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 	case OpcodeI32Store16: // 0x3b
 		return ParseInstrI32Store16(opc, ber)
 
+	case OpcodeMemorySize: // 0x3f
+	return ParseInstrMemorySize(opc, ber)
+
 	case OpcodeMemoryGrow: // 0x40
 		return ParseInstrMemoryGrow(opc, ber)
 
