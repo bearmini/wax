@@ -6,13 +6,17 @@ import (
 )
 
 type InstrI64ExtenduI32 struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrI64ExtenduI32(opcode Opcode, ber *BinaryEncodingReader) (*InstrI64ExtenduI32, error) {
 	return &InstrI64ExtenduI32{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrI64ExtenduI32) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI64ExtenduI32) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -23,7 +27,7 @@ func (instr *InstrI64ExtenduI32) Perform(ctx context.Context, rt *Runtime) (*Lab
 
 func (instr *InstrI64ExtenduI32) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("i64.extend_i32_u"),
 	}, nil
 }

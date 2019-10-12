@@ -26,11 +26,32 @@ wax="$d/cmd/wax/wax"
 a="$( $wax -f "add" -a "i32:123" -a "i32:234" "$d/examples/go/add/main.wasm" )"
 assert_equal "$a" "0:i32:357"
 
+a="$( $wax -f "sub" -a "i32:123" -a "i32:23" "$d/examples/go/add/main.wasm" )"
+assert_equal "$a" "0:i32:100"
+
 a="$( $wax -f "sub" -a "i32:123" -a "i32:234" "$d/examples/go/add/main.wasm" )"
 assert_equal "$a" "0:i32:4294967185" # -111
 
-a="$( $wax -f "add" -a "i32:1234" -a "i32:2345" "$d/examples/rust/add/main-stripped.wasm" )"
-assert_equal "$a" "0:i32:3579"
+a="$( $wax -f "mul" -a "i32:13" -a "i32:17" "$d/examples/go/add/main.wasm" )"
+assert_equal "$a" "0:i32:221"
+
+a="$( $wax -f "div" -a "i32:10" -a "i32:3" "$d/examples/go/add/main.wasm" )"
+assert_equal "$a" "0:i32:3"
+
+a="$( $wax -f "add" -a "i32:123" -a "i32:234" "$d/examples/rust/add/main-stripped.wasm" )"
+assert_equal "$a" "0:i32:357"
+
+a="$( $wax -f "sub" -a "i32:123" -a "i32:23" "$d/examples/rust/add/main-stripped.wasm" )"
+assert_equal "$a" "0:i32:100"
+
+a="$( $wax -f "sub" -a "i32:123" -a "i32:234" "$d/examples/rust/add/main-stripped.wasm" )"
+assert_equal "$a" "0:i32:4294967185" # -111
+
+a="$( $wax -f "mul" -a "i32:13" -a "i32:17" "$d/examples/rust/add/main-stripped.wasm" )"
+assert_equal "$a" "0:i32:221"
+
+a="$( $wax -f "div" -a "i32:10" -a "i32:3" "$d/examples/rust/add/main-stripped.wasm" )"
+assert_equal "$a" "0:i32:3"
 
 a="$( $wax -f "block_test" -a "i32:10" -a "i32:20" "$d/examples/wat/block_test/main.wasm" )"
 assert_equal "$a" "0:i32:1"

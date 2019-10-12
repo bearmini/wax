@@ -7,11 +7,15 @@ import (
 )
 
 type InstrUnreachable struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrUnreachable(opcode Opcode, ber *BinaryEncodingReader) (*InstrUnreachable, error) {
-	return &InstrUnreachable{Opcode: opcode}, nil
+	return &InstrUnreachable{opcode: opcode}, nil
+}
+
+func (instr *InstrUnreachable) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrUnreachable) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -20,7 +24,7 @@ func (instr *InstrUnreachable) Perform(ctx context.Context, rt *Runtime) (*Label
 
 func (instr *InstrUnreachable) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: "unreachable",
 	}, nil
 }

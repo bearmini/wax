@@ -8,7 +8,7 @@ import (
 )
 
 type InstrLocalTee struct {
-	Opcode        Opcode
+	opcode        Opcode
 	LocalIdx      LocalIdx
 	LocalIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrLocalTee(opcode Opcode, ber *BinaryEncodingReader) (*InstrLocalTe
 	x := LocalIdx(x64)
 
 	return &InstrLocalTee{
-		Opcode:        opcode,
+		opcode:        opcode,
 		LocalIdx:      x,
 		LocalIdxBytes: xBytes,
 	}, nil
+}
+
+func (instr *InstrLocalTee) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrLocalTee) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -53,7 +57,7 @@ func (instr *InstrLocalTee) Perform(ctx context.Context, rt *Runtime) (*Label, e
 
 func (instr *InstrLocalTee) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.LocalIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.LocalIdxBytes...),
 		mnemonic: fmt.Sprintf("local.tee %08x", instr.LocalIdx),
 	}, nil
 }

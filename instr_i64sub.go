@@ -6,13 +6,17 @@ import (
 )
 
 type InstrI64Sub struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrI64Sub(opcode Opcode, ber *BinaryEncodingReader) (*InstrI64Sub, error) {
 	return &InstrI64Sub{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrI64Sub) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI64Sub) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -23,7 +27,7 @@ func (instr *InstrI64Sub) Perform(ctx context.Context, rt *Runtime) (*Label, err
 
 func (instr *InstrI64Sub) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("i64.sub"),
 	}, nil
 }

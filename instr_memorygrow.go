@@ -8,7 +8,7 @@ import (
 )
 
 type InstrMemoryGrow struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrMemoryGrow(opcode Opcode, ber *BinaryEncodingReader) (*InstrMemoryGrow, error) {
@@ -21,8 +21,12 @@ func ParseInstrMemoryGrow(opcode Opcode, ber *BinaryEncodingReader) (*InstrMemor
 	}
 
 	return &InstrMemoryGrow{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrMemoryGrow) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrMemoryGrow) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -31,7 +35,7 @@ func (instr *InstrMemoryGrow) Perform(ctx context.Context, rt *Runtime) (*Label,
 
 func (instr *InstrMemoryGrow) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, 0x00),
+		binary:   append([]byte{byte(instr.opcode)}, 0x00),
 		mnemonic: fmt.Sprintf("memory.grow 0x00"),
 	}, nil
 }

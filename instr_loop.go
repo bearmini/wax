@@ -11,7 +11,7 @@ import (
 0x03 bt:blocktype (in:instr)* 0x0B
 */
 type InstrLoop struct {
-	Opcode       Opcode
+	opcode       Opcode
 	BlockType    BlockType
 	Instructions []Instr
 }
@@ -35,10 +35,14 @@ func ParseInstrLoop(opcode Opcode, ber *BinaryEncodingReader) (*InstrLoop, error
 	}
 
 	return &InstrLoop{
-		Opcode:       opcode,
+		opcode:       opcode,
 		BlockType:    *bt,
 		Instructions: in,
 	}, nil
+}
+
+func (instr *InstrLoop) Opcode() Opcode {
+	return instr.opcode
 }
 
 /*
@@ -75,15 +79,7 @@ func (instr *InstrLoop) Perform(ctx context.Context, rt *Runtime) (*Label, error
 		return nil, err
 	}
 
-	/*  
-	exitInstructionsWithLabel() should be called only When the end of a block is reached without a jump.
-	The loop instruction always end with a branch (jump). So we don't need call exitInstructionsWithLabel().
-	err = rt.exitInstructionsWithLabel()
-	if err != nil {
-		return nil, err
-	}
-	*/
-	return nil, nil
+	return nil, rt.exitInstructionsWithLabel()
 }
 
 func (instr *InstrLoop) Disassemble() (*disasmLineComponents, error) {
@@ -97,7 +93,7 @@ func (instr *InstrLoop) Disassemble() (*disasmLineComponents, error) {
 	}
 
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("loop bt:%02x", instr.BlockType),
 		nest:     nest,
 	}, nil

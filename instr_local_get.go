@@ -8,7 +8,7 @@ import (
 )
 
 type InstrLocalGet struct {
-	Opcode        Opcode
+	opcode        Opcode
 	LocalIdx      LocalIdx
 	LocalIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrLocalGet(opcode Opcode, ber *BinaryEncodingReader) (*InstrLocalGe
 	x := LocalIdx(x64)
 
 	return &InstrLocalGet{
-		Opcode:        opcode,
+		opcode:        opcode,
 		LocalIdx:      x,
 		LocalIdxBytes: xBytes,
 	}, nil
+}
+
+func (instr *InstrLocalGet) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrLocalGet) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -44,7 +48,7 @@ func (instr *InstrLocalGet) Perform(ctx context.Context, rt *Runtime) (*Label, e
 
 func (instr *InstrLocalGet) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.LocalIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.LocalIdxBytes...),
 		mnemonic: fmt.Sprintf("local.get %08x", instr.LocalIdx),
 	}, nil
 }

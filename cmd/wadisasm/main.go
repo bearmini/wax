@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -10,6 +11,8 @@ import (
 )
 
 var opts struct {
+	FuncAddr *uint32 `short:"a" long:"funcaddr" description:"Specify func addr to disasm"`
+	FuncName *string `short:"n" long:"funcname" description:"Specify func name to disasm"`
 }
 
 func main() {
@@ -54,13 +57,54 @@ func disasm(fname string) error {
 		return err
 	}
 
+	if opts.FuncAddr != nil {
+		fa := *opts.FuncAddr
+		return disasmFuncAddr(m, fa)
+	}
+
+	if opts.FuncName != nil {
+		fn := *opts.FuncName
+		return disasmFuncName(m, fn)
+	}
+
+	return disasmAll(m)
+}
+
+func disasmFuncAddr(m *wax.Module, fa uint32) error {
 	cs := m.GetCodeSection()
-	for i, c := range cs.Code {
-		d, err := wax.Disassemble(c)
+	if fa >= uint32(len(cs.Code)) {
+		return errors.New("func addr is out of range")
+	}
+	c := cs.Code[fa]
+	d, err := wax.Disassemble(c)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("\nfunc:%d\n%s\n\n", fa, d)
+	return nil
+}
+
+func disasmFuncName(m *wax.Module, fn string) error {
+	rt, err := wax.NewRuntime(m)
+	if err != nil {
+		return err
+	}
+
+	fa, err := rt.FindFuncAddr(fn)
+	if err != nil {
+		return err
+	}
+
+	return disasmFuncAddr(m, uint32(*fa))
+}
+
+func disasmAll(m *wax.Module) error {
+	cs := m.GetCodeSection()
+	for fa := range cs.Code {
+		err := disasmFuncAddr(m, uint32(fa))
 		if err != nil {
 			return err
 		}
-		fmt.Printf("\nfunc:%d\n%s\n\n", i, d)
 	}
 
 	return nil

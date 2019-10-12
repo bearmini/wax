@@ -11,7 +11,7 @@ import (
 0x02 bt:blocktype (in:instr)* 0x0B
 */
 type InstrBlock struct {
-	Opcode       Opcode
+	opcode       Opcode
 	BlockType    BlockType
 	Instructions []Instr
 }
@@ -35,10 +35,14 @@ func ParseInstrBlock(opcode Opcode, ber *BinaryEncodingReader) (*InstrBlock, err
 	}
 
 	return &InstrBlock{
-		Opcode:       opcode,
+		opcode:       opcode,
 		BlockType:    *bt,
 		Instructions: in,
 	}, nil
+}
+
+func (instr *InstrBlock) Opcode() Opcode {
+	return instr.opcode
 }
 
 /*
@@ -75,12 +79,7 @@ func (instr *InstrBlock) Perform(ctx context.Context, rt *Runtime) (*Label, erro
 		return nil, err
 	}
 
-	err = rt.exitInstructionsWithLabel()
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+	return nil, rt.exitInstructionsWithLabel()
 }
 
 func (instr *InstrBlock) Disassemble() (*disasmLineComponents, error) {
@@ -94,7 +93,7 @@ func (instr *InstrBlock) Disassemble() (*disasmLineComponents, error) {
 	}
 
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("block bt:%02x", instr.BlockType),
 		nest:     nest,
 	}, nil

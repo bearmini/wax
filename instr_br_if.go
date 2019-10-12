@@ -8,7 +8,7 @@ import (
 )
 
 type InstrBrIf struct {
-	Opcode        Opcode
+	opcode        Opcode
 	LabelIdx      LabelIdx
 	LabelIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrBrIf(opcode Opcode, ber *BinaryEncodingReader) (*InstrBrIf, error
 	l := LabelIdx(l64)
 
 	return &InstrBrIf{
-		Opcode:        opcode,
+		opcode:        opcode,
 		LabelIdx:      l,
 		LabelIdxBytes: lBytes,
 	}, nil
+}
+
+func (instr *InstrBrIf) Opcode() Opcode {
+	return instr.opcode
 }
 
 /*
@@ -68,7 +72,7 @@ func (instr *InstrBrIf) Perform(ctx context.Context, rt *Runtime) (*Label, error
 
 func (instr *InstrBrIf) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.LabelIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.LabelIdxBytes...),
 		mnemonic: fmt.Sprintf("br_if labelidx:%08x", instr.LabelIdx),
 	}, nil
 }

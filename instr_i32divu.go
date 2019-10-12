@@ -8,13 +8,17 @@ import (
 )
 
 type InstrI32Divu struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrI32Divu(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Divu, error) {
 	return &InstrI32Divu{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrI32Divu) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI32Divu) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -30,7 +34,7 @@ func (instr *InstrI32Divu) Perform(ctx context.Context, rt *Runtime) (*Label, er
 
 func (instr *InstrI32Divu) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("i32.div_u"),
 	}, nil
 }

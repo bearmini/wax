@@ -6,7 +6,7 @@ import (
 )
 
 type InstrI64Const struct {
-	Opcode Opcode
+	opcode Opcode
 	N      uint64
 	NBytes []byte
 }
@@ -18,10 +18,14 @@ func ParseInstrI64Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrI64Cons
 	}
 
 	return &InstrI64Const{
-		Opcode: opcode,
+		opcode: opcode,
 		N:      n64,
 		NBytes: nBytes,
 	}, nil
+}
+
+func (instr *InstrI64Const) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI64Const) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -30,7 +34,7 @@ func (instr *InstrI64Const) Perform(ctx context.Context, rt *Runtime) (*Label, e
 
 func (instr *InstrI64Const) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.NBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.NBytes...),
 		mnemonic: fmt.Sprintf("i64.const %016x", instr.N),
 	}, nil
 }

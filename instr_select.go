@@ -7,13 +7,17 @@ import (
 )
 
 type InstrSelect struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrSelect(opcode Opcode, ber *BinaryEncodingReader) (*InstrSelect, error) {
 	return &InstrSelect{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrSelect) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrSelect) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -49,7 +53,7 @@ func (instr *InstrSelect) Perform(ctx context.Context, rt *Runtime) (*Label, err
 
 func (instr *InstrSelect) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}),
+		binary:   append([]byte{byte(instr.opcode)}),
 		mnemonic: "select",
 	}, nil
 }

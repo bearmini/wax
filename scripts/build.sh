@@ -92,6 +92,7 @@ build_with_go "$d/cmd/wax"
 if tinygo_available; then
   build_with_tinygo "$d/examples/go/add" main.go
   build_with_tinygo "$d/examples/go/loop" main.go
+  build_with_tinygo "$d/examples/go/string" main.go
 else
   echo "skipping building examples written in go, as 'tinygo' is not available"
 fi

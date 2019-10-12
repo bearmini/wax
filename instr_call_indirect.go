@@ -8,7 +8,7 @@ import (
 )
 
 type InstrCallIndirect struct {
-	Opcode       Opcode
+	opcode       Opcode
 	TypeIdx      TypeIdx
 	TypeIdxBytes []byte
 }
@@ -29,10 +29,14 @@ func ParseInstrCallIndirect(opcode Opcode, ber *BinaryEncodingReader) (*InstrCal
 	}
 
 	return &InstrCallIndirect{
-		Opcode:       opcode,
+		opcode:       opcode,
 		TypeIdx:      t,
 		TypeIdxBytes: tBytes,
 	}, nil
+}
+
+func (instr *InstrCallIndirect) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrCallIndirect) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -41,7 +45,7 @@ func (instr *InstrCallIndirect) Perform(ctx context.Context, rt *Runtime) (*Labe
 
 func (instr *InstrCallIndirect) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.TypeIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.TypeIdxBytes...),
 		mnemonic: fmt.Sprintf("call typeidx:%08x 0x00", instr.TypeIdx),
 	}, nil
 }

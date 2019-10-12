@@ -6,13 +6,17 @@ import (
 )
 
 type InstrI32Eq struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrI32Eq(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Eq, error) {
 	return &InstrI32Eq{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrI32Eq) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI32Eq) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -27,7 +31,7 @@ func (instr *InstrI32Eq) Perform(ctx context.Context, rt *Runtime) (*Label, erro
 
 func (instr *InstrI32Eq) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("i32.eq"),
 	}, nil
 }

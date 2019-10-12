@@ -6,13 +6,17 @@ import (
 )
 
 type InstrI32Eqz struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrI32Eqz(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Eqz, error) {
 	return &InstrI32Eqz{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrI32Eqz) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI32Eqz) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -27,7 +31,7 @@ func (instr *InstrI32Eqz) Perform(ctx context.Context, rt *Runtime) (*Label, err
 
 func (instr *InstrI32Eqz) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("i32.eqz"),
 	}, nil
 }

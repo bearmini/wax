@@ -8,7 +8,7 @@ import (
 )
 
 type InstrGlobalSet struct {
-	Opcode         Opcode
+	opcode         Opcode
 	GlobalIdx      GlobalIdx
 	GlobalIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrGlobalSet(opcode Opcode, ber *BinaryEncodingReader) (*InstrGlobal
 	x := GlobalIdx(x64)
 
 	return &InstrGlobalSet{
-		Opcode:         opcode,
+		opcode:         opcode,
 		GlobalIdx:      x,
 		GlobalIdxBytes: xBytes,
 	}, nil
+}
+
+func (instr *InstrGlobalSet) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrGlobalSet) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -33,7 +37,7 @@ func (instr *InstrGlobalSet) Perform(ctx context.Context, rt *Runtime) (*Label, 
 
 func (instr *InstrGlobalSet) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.GlobalIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.GlobalIdxBytes...),
 		mnemonic: fmt.Sprintf("global.set %08x", instr.GlobalIdx),
 	}, nil
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type InstrCall struct {
-	Opcode       Opcode
+	opcode       Opcode
 	FuncIdx      FuncIdx
 	FuncIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrCall(opcode Opcode, ber *BinaryEncodingReader) (*InstrCall, error
 	f := FuncIdx(f64)
 
 	return &InstrCall{
-		Opcode:       opcode,
+		opcode:       opcode,
 		FuncIdx:      f,
 		FuncIdxBytes: fBytes,
 	}, nil
+}
+
+func (instr *InstrCall) Opcode() Opcode {
+	return instr.opcode
 }
 
 /*
@@ -54,7 +58,7 @@ func (instr *InstrCall) Perform(ctx context.Context, rt *Runtime) (*Label, error
 
 func (instr *InstrCall) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.FuncIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.FuncIdxBytes...),
 		mnemonic: fmt.Sprintf("call funcidx:%08x", instr.FuncIdx),
 	}, nil
 }

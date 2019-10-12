@@ -3,11 +3,17 @@ package wax
 import "context"
 
 type InstrEnd struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrEnd(opcode Opcode, ber *BinaryEncodingReader) (*InstrEnd, error) {
-	return &InstrEnd{Opcode: opcode}, nil
+	return &InstrEnd{
+		opcode: opcode,
+	}, nil
+}
+
+func (instr *InstrEnd) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrEnd) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -16,7 +22,7 @@ func (instr *InstrEnd) Perform(ctx context.Context, rt *Runtime) (*Label, error)
 
 func (instr *InstrEnd) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: "end",
 	}, nil
 }

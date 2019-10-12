@@ -6,13 +6,17 @@ import (
 )
 
 type InstrI32Lts struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrI32Lts(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Lts, error) {
 	return &InstrI32Lts{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrI32Lts) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI32Lts) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -27,7 +31,7 @@ func (instr *InstrI32Lts) Perform(ctx context.Context, rt *Runtime) (*Label, err
 
 func (instr *InstrI32Lts) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("i32.lt_s"),
 	}, nil
 }

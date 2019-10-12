@@ -6,7 +6,7 @@ import (
 )
 
 type InstrI32Load8u struct {
-	Opcode      Opcode
+	opcode      Opcode
 	MemArg      MemArg
 	MemArgBytes []byte
 }
@@ -18,10 +18,14 @@ func ParseInstrI32Load8u(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Loa
 	}
 
 	return &InstrI32Load8u{
-		Opcode:      opcode,
+		opcode:      opcode,
 		MemArg:      *ma,
 		MemArgBytes: maBytes,
 	}, nil
+}
+
+func (instr *InstrI32Load8u) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI32Load8u) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -30,7 +34,7 @@ func (instr *InstrI32Load8u) Perform(ctx context.Context, rt *Runtime) (*Label, 
 
 func (instr *InstrI32Load8u) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.MemArgBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.MemArgBytes...),
 		mnemonic: fmt.Sprintf("i32.load8_u a:%08x o:%08x", instr.MemArg.Align, instr.MemArg.Offset),
 	}, nil
 }

@@ -6,7 +6,7 @@ import (
 )
 
 type InstrI32Store struct {
-	Opcode      Opcode
+	opcode      Opcode
 	MemArg      MemArg
 	MemArgBytes []byte
 }
@@ -18,10 +18,14 @@ func ParseInstrI32Store(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Stor
 	}
 
 	return &InstrI32Store{
-		Opcode:      opcode,
+		opcode:      opcode,
 		MemArg:      *ma,
 		MemArgBytes: maBytes,
 	}, nil
+}
+
+func (instr *InstrI32Store) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrI32Store) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -30,7 +34,7 @@ func (instr *InstrI32Store) Perform(ctx context.Context, rt *Runtime) (*Label, e
 
 func (instr *InstrI32Store) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.MemArgBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.MemArgBytes...),
 		mnemonic: fmt.Sprintf("i32.store a:%08x o:%08x", instr.MemArg.Align, instr.MemArg.Offset),
 	}, nil
 }

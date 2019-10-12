@@ -8,7 +8,7 @@ import (
 )
 
 type InstrElse struct {
-	Opcode       Opcode
+	opcode       Opcode
 	Instructions []Instr
 }
 
@@ -26,9 +26,13 @@ func ParseInstrElse(opcode Opcode, ber *BinaryEncodingReader) (*InstrElse, error
 	}
 
 	return &InstrElse{
-		Opcode:       opcode,
+		opcode:       opcode,
 		Instructions: in,
 	}, nil
+}
+
+func (instr *InstrElse) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrElse) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -37,7 +41,7 @@ func (instr *InstrElse) Perform(ctx context.Context, rt *Runtime) (*Label, error
 
 func (instr *InstrElse) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("else"),
 	}, nil
 }

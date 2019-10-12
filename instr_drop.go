@@ -3,13 +3,17 @@ package wax
 import "context"
 
 type InstrDrop struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrDrop(opcode Opcode, ber *BinaryEncodingReader) (*InstrDrop, error) {
 	return &InstrDrop{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrDrop) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrDrop) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -19,7 +23,7 @@ func (instr *InstrDrop) Perform(ctx context.Context, rt *Runtime) (*Label, error
 
 func (instr *InstrDrop) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}),
+		binary:   append([]byte{byte(instr.opcode)}),
 		mnemonic: "drop",
 	}, nil
 }

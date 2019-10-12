@@ -8,7 +8,7 @@ import (
 )
 
 type InstrBr struct {
-	Opcode        Opcode
+	opcode        Opcode
 	LabelIdx      LabelIdx
 	LabelIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrBr(opcode Opcode, ber *BinaryEncodingReader) (*InstrBr, error) {
 	l := LabelIdx(l64)
 
 	return &InstrBr{
-		Opcode:        opcode,
+		opcode:        opcode,
 		LabelIdx:      l,
 		LabelIdxBytes: lBytes,
 	}, nil
+}
+
+func (instr *InstrBr) Opcode() Opcode {
+	return instr.opcode
 }
 
 /*
@@ -98,12 +102,17 @@ func (instr *InstrBr) Perform(ctx context.Context, rt *Runtime) (*Label, error) 
 	}
 
 	// 8.  Jump to the continuation of L.
-	return l, nil
+	if instr.LabelIdx == 0 {
+		return l, nil
+	}
+
+	ewj := NewEndWithJump(uint32(instr.LabelIdx + 1))
+	return l, ewj
 }
 
 func (instr *InstrBr) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.LabelIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.LabelIdxBytes...),
 		mnemonic: fmt.Sprintf("br labelidx:%08x", instr.LabelIdx),
 	}, nil
 }

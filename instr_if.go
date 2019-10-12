@@ -8,7 +8,7 @@ import (
 )
 
 type InstrIf struct {
-	Opcode       Opcode
+	opcode       Opcode
 	BlockType    BlockType
 	Instructions []Instr
 	ElseClause   *InstrElse
@@ -39,11 +39,15 @@ func ParseInstrIf(opcode Opcode, ber *BinaryEncodingReader) (*InstrIf, error) {
 	}
 
 	return &InstrIf{
-		Opcode:       opcode,
+		opcode:       opcode,
 		BlockType:    *bt,
 		Instructions: in,
 		ElseClause:   elseClause, // else clause
 	}, nil
+}
+
+func (instr *InstrIf) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrIf) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -52,7 +56,7 @@ func (instr *InstrIf) Perform(ctx context.Context, rt *Runtime) (*Label, error) 
 
 func (instr *InstrIf) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   []byte{byte(instr.Opcode)},
+		binary:   []byte{byte(instr.opcode)},
 		mnemonic: fmt.Sprintf("if bt:%02x", instr.BlockType),
 	}, nil
 }

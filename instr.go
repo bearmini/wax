@@ -18,6 +18,7 @@ The only exception are structured control instructions,
 which consist of several opcodes bracketing their nested instruction sequences.
 */
 type Instr interface {
+	Opcode() Opcode
 	Perform(ctx context.Context, rt *Runtime) (*Label, error)
 	Disassemble() (*disasmLineComponents, error)
 }
@@ -101,7 +102,7 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Store16(opc, ber)
 
 	case OpcodeMemorySize: // 0x3f
-	return ParseInstrMemorySize(opc, ber)
+		return ParseInstrMemorySize(opc, ber)
 
 	case OpcodeMemoryGrow: // 0x40
 		return ParseInstrMemoryGrow(opc, ber)
@@ -161,6 +162,8 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Xor(opc, ber)
 	case OpcodeI32Shl: // 0x74
 		return ParseInstrI32Shl(opc, ber)
+	case OpcodeI32Shrs: // 0x75
+		return ParseInstrI32Shrs(opc, ber)
 	case OpcodeI32Shru: // 0x76
 		return ParseInstrI32Shru(opc, ber)
 	case OpcodeI32Rotl: // 0x77

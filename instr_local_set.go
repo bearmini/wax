@@ -8,7 +8,7 @@ import (
 )
 
 type InstrLocalSet struct {
-	Opcode        Opcode
+	opcode        Opcode
 	LocalIdx      LocalIdx
 	LocalIdxBytes []byte
 }
@@ -21,10 +21,14 @@ func ParseInstrLocalSet(opcode Opcode, ber *BinaryEncodingReader) (*InstrLocalSe
 	x := LocalIdx(x64)
 
 	return &InstrLocalSet{
-		Opcode:        opcode,
+		opcode:        opcode,
 		LocalIdx:      x,
 		LocalIdxBytes: xBytes,
 	}, nil
+}
+
+func (instr *InstrLocalSet) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrLocalSet) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -50,7 +54,7 @@ func (instr *InstrLocalSet) Perform(ctx context.Context, rt *Runtime) (*Label, e
 
 func (instr *InstrLocalSet) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, instr.LocalIdxBytes...),
+		binary:   append([]byte{byte(instr.opcode)}, instr.LocalIdxBytes...),
 		mnemonic: fmt.Sprintf("local.set %08x", instr.LocalIdx),
 	}, nil
 }

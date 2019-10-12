@@ -42,6 +42,16 @@ func (s *Stack) CountLabels() int {
 	return n
 }
 
+func (s *Stack) CountFrames() int {
+	n := 0
+	for i := len(s.entries) - 1; i >= 0; i-- {
+		if s.entries[i].Frame != nil {
+			n++
+		}
+	}
+	return n
+}
+
 func (s *Stack) Top() *StackEntry {
 	if len(s.entries) == 0 {
 		return nil
@@ -78,7 +88,7 @@ func (s *Stack) PushValuesBack(vals []*Val) error {
 	return nil
 }
 
-func (s *Stack) PopValue() (*Val, error) {
+func (s *Stack) Pop() (*StackEntry, error) {
 	if len(s.entries) == 0 {
 		return nil, errors.New("no items in the stack")
 	}
@@ -86,6 +96,15 @@ func (s *Stack) PopValue() (*Val, error) {
 	last := len(s.entries) - 1
 	e := s.entries[last]
 	s.entries = s.entries[0:last]
+
+	return e, nil
+}
+
+func (s *Stack) PopValue() (*Val, error) {
+	e, err := s.Pop()
+	if err != nil {
+		return nil, err
+	}
 
 	if e.Value == nil {
 		return nil, errors.New("value expected")
@@ -99,7 +118,7 @@ func (s *Stack) PopValues(n int) ([]*Val, error) {
 		return nil, errors.New("invalid argument")
 	}
 	if len(s.entries) < n {
-		return nil, errors.New("no items in the stack")
+		return nil, errors.New("not enough items in the stack")
 	}
 
 	vals := make([]*Val, n)

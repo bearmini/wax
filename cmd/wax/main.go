@@ -15,7 +15,6 @@ import (
 )
 
 var opts struct {
-	Disassemble bool     `short:"d" long:"disassemble" description:"show disassemble list instead of executing" `
 	FuncName    string   `short:"f" long:"function"    description:"function name to be executed"`
 	FuncArgs    []string `short:"a" long:"arg"         description:"arguments to be passed to the specified function. \neg. -a i32:123 -a f64:1.23"`
 	MaxExecTime int64    `short:"t" long:"exec-time"   description:"maximum execution time in seconds. 0 (default) for infinite."`
@@ -37,11 +36,7 @@ func run() error {
 
 	for _, f := range args {
 		var err error
-		if opts.Disassemble {
-			err = disassemble(f)
-		} else {
-			err = execute(f)
-		}
+		err = execute(f)
 		if err != nil {
 			return err
 		}
@@ -95,6 +90,7 @@ func execute(fname string) error {
 
 	ret, err := rt.InvokeFunc(ctx, *fa, val)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Runtime status: %s\n", rt.Dump())
 		return err
 	}
 
@@ -132,30 +128,4 @@ func parseFuncArgs(args []string) ([]*wax.Val, error) {
 	}
 
 	return result, nil
-}
-
-func disassemble(fname string) error {
-	f, err := os.Open(fname)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	m, err := wax.ParseBinaryModule(f)
-	if err != nil {
-		return err
-	}
-
-	cs := m.GetCodeSection()
-	for i, c := range cs.Code {
-		dis, err := wax.Disassemble(c)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("code:%d %s\n", i, m.GetExportedFuncName(wax.FuncAddr(i)))
-		fmt.Println(dis)
-		fmt.Println()
-	}
-
-	return nil
 }

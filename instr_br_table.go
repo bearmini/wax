@@ -8,7 +8,7 @@ import (
 )
 
 type InstrBrTable struct {
-	Opcode  Opcode
+	opcode  Opcode
 	Ls      []LabelIdx
 	LsBytes []byte
 	Ln      LabelIdx
@@ -41,12 +41,16 @@ func ParseInstrBrTable(opcode Opcode, ber *BinaryEncodingReader) (*InstrBrTable,
 	ln := LabelIdx(ln64)
 
 	return &InstrBrTable{
-		Opcode:  opcode,
+		opcode:  opcode,
 		Ls:      ls,
 		LsBytes: append(nBytes, lsBytes...),
 		Ln:      ln,
 		LnBytes: lnBytes,
 	}, nil
+}
+
+func (instr *InstrBrTable) Opcode() Opcode {
+	return instr.opcode
 }
 
 /*
@@ -100,7 +104,7 @@ func (instr *InstrBrTable) Perform(ctx context.Context, rt *Runtime) (*Label, er
 
 func (instr *InstrBrTable) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append(append([]byte{byte(instr.Opcode)}, instr.LsBytes...), instr.LnBytes...),
+		binary:   append(append([]byte{byte(instr.opcode)}, instr.LsBytes...), instr.LnBytes...),
 		mnemonic: fmt.Sprintf("br_table l*:%v, lN:%x", instr.Ls, instr.Ln),
 	}, nil
 }

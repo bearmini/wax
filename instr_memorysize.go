@@ -8,7 +8,7 @@ import (
 )
 
 type InstrMemorySize struct {
-	Opcode Opcode
+	opcode Opcode
 }
 
 func ParseInstrMemorySize(opcode Opcode, ber *BinaryEncodingReader) (*InstrMemorySize, error) {
@@ -21,8 +21,12 @@ func ParseInstrMemorySize(opcode Opcode, ber *BinaryEncodingReader) (*InstrMemor
 	}
 
 	return &InstrMemorySize{
-		Opcode: opcode,
+		opcode: opcode,
 	}, nil
+}
+
+func (instr *InstrMemorySize) Opcode() Opcode {
+	return instr.opcode
 }
 
 func (instr *InstrMemorySize) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
@@ -31,7 +35,7 @@ func (instr *InstrMemorySize) Perform(ctx context.Context, rt *Runtime) (*Label,
 
 func (instr *InstrMemorySize) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
-		binary:   append([]byte{byte(instr.Opcode)}, 0x00),
+		binary:   append([]byte{byte(instr.opcode)}, 0x00),
 		mnemonic: fmt.Sprintf("memory.size 0x00"),
 	}, nil
 }

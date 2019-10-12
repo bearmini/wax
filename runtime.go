@@ -33,6 +33,14 @@ func NewRuntime(m *Module) (*Runtime, error) {
 	}, nil
 }
 
+func (rt *Runtime) Dump() string {
+	s := ""
+	if rt.Stack != nil {
+		s += "\nStack:\n" + rt.Stack.Dump()
+	}
+	return s
+}
+
 func (rt *Runtime) FindFuncAddr(fname string) (*FuncAddr, error) {
 	fi := rt.findFuncIdxByName(fname)
 	if fi == nil {
@@ -241,7 +249,18 @@ func (rt *Runtime) InvokeFuncAddr(ctx context.Context, a FuncAddr) error {
 	// 12. Enter the instruction sequnce instr* with label L.
 	err = rt.enterInstructionsWithLabel(ctx, l, instr)
 	if err != nil {
-		return err
+		if _, ok := err.(*EndWithReturn); ok {
+			return nil
+		}
+		if ewj, ok := err.(*EndWithJump); ok {
+			ewj.LabelsExited--
+			if ewj.LabelsExited != 0 {
+				return err
+			}
+			// if we get ewj.LabelsExited == 0, we want to continue exit process
+		} else {
+			return err
+		}
 	}
 
 	err = rt.exitInstructionsWithLabel()
@@ -328,7 +347,15 @@ func (rt *Runtime) enterInstructionsWithLabel(ctx context.Context, l *Label, ins
 		instr := instructions[ip]
 		continuation, err := instr.Perform(ctx, rt)
 		if err != nil {
-			return err
+			ewj, ok := err.(*EndWithJump)
+			if !ok {
+				return err
+			}
+
+			if ewj.LabelsExited > 0 {
+				ewj.LabelsExited--
+				return ewj
+			}
 		}
 
 		ip++
