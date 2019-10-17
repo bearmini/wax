@@ -9,8 +9,13 @@ import (
 )
 
 type Module struct {
+	valid    bool
 	Preamble Preamble
 	Sections []Section
+}
+
+func (m *Module) IsValid() bool {
+	return m.valid
 }
 
 func (m *Module) GetTypeSection() *TypeSection {
@@ -146,6 +151,15 @@ func (m *Module) FindCustomSectionWithName(name string) *CustomSection {
 	return nil
 }
 
+func (m *Module) GetImports() []*Import {
+	is := m.GetImportSection()
+	if is == nil {
+		return []*Import{}
+	}
+
+	return is.Imports
+}
+
 func (m *Module) GetFuncs() []Func {
 	fs := m.GetFunctionSection()
 	cs := m.GetCodeSection()
@@ -231,6 +245,7 @@ func ParseBinaryModule(r io.Reader) (*Module, error) {
 	}
 
 	return &Module{
+		valid: true,
 		Preamble: *p,
 		Sections: s,
 	}, nil

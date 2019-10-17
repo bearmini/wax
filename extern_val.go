@@ -7,8 +7,8 @@ externval ::= func   funcaddr
             | global globaladdr
 */
 type ExternVal struct {
-	Func   FuncAddr
-	Table  TableAddr
-	Mem    MemAddr
-	Global GlobalAddr
+	Func   *FuncAddr
+	Table  *TableAddr
+	Mem    *MemAddr
+	Global *GlobalAddr
 }

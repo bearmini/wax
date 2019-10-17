@@ -38,6 +38,9 @@ assert_equal "$a" "0:i32:221"
 a="$( $wax -f "div" -a "i32:10" -a "i32:3" "$d/examples/go/add/main.wasm" )"
 assert_equal "$a" "0:i32:3"
 
+a="$( $wax -f "fib" -a "i32:20" "$d/examples/go/fib/main.wasm" )"
+assert_equal "$a" "0:i32:6765"
+
 a="$( $wax -f "add" -a "i32:123" -a "i32:234" "$d/examples/rust/add/main-stripped.wasm" )"
 assert_equal "$a" "0:i32:357"
 

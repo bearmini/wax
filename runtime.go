@@ -17,10 +17,12 @@ type Runtime struct {
 func NewRuntime(m *Module) (*Runtime, error) {
 	//s := NewStore(m)
 	s := NewEmptyStore()
-	e := []ExternVal{}
-	val := []ValType{}
+	e, err := createExternValsForImportSection(m)
+	if err != nil {
+		return nil, err
+	}
 
-	mi, err := NewModuleInstance(m, s, e, val)
+	mi, err := NewModuleInstance(m, s, e)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +33,23 @@ func NewRuntime(m *Module) (*Runtime, error) {
 		Module:         m,
 		ModuleInstance: mi,
 	}, nil
+}
+
+func createExternValsForImportSection(m *Module) ([]ExternVal, error) {
+	result := []ExternVal{}
+
+	imports := m.GetImports()
+	nFunctions := 0
+	for _, im := range imports {
+		switch im.DescType {
+		case ImportDescTypeFunc:
+			fa := FuncAddr(nFunctions)
+			result = append(result, ExternVal{Func: &fa})
+		default:
+			return nil, errors.New("unsupported import desc type")
+		}
+	}
+	return result, nil
 }
 
 func (rt *Runtime) Dump() string {
