@@ -3,6 +3,7 @@ package wax
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/pkg/errors"
 )
@@ -26,9 +27,13 @@ func (instr *InstrI32Divs) Perform(ctx context.Context, rt *Runtime) (*Label, er
 		i1 := int32(v1.MustGetI32())
 		i2 := int32(v2.MustGetI32())
 		if i2 == 0 {
-			return nil, errors.New("div by 0")
+			return nil, errors.New("integer divide by zero")
 		}
-		return NewValI32(uint32(i1 / i2)), nil
+		res := int64(i1) / int64(i2)
+		if res > math.MaxInt32 || res < math.MinInt32 {
+			return nil, errors.New("integer overflow")
+		}
+		return NewValI32(uint32(res)), nil
 	})
 }
 

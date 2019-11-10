@@ -1,0 +1,3 @@
+[submodule "vendor/WebAssembly/spec"]
+	path = vendor/WebAssembly/spec
+	url = https://github.com/WebAssembly/spec.git

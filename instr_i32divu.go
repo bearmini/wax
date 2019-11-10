@@ -26,7 +26,7 @@ func (instr *InstrI32Divu) Perform(ctx context.Context, rt *Runtime) (*Label, er
 		i1 := v1.MustGetI32()
 		i2 := v2.MustGetI32()
 		if i2 == 0 {
-			return nil, errors.New("div by 0")
+			return nil, errors.New("integer divide by zero")
 		}
 		return NewValI32(i1 / i2), nil
 	})

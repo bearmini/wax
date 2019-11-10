@@ -21,7 +21,7 @@ func (instr *InstrI32Xor) Opcode() Opcode {
 
 func (instr *InstrI32Xor) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, binop(rt, ValTypeI32, func(v1, v2 *Val) (*Val, error) {
-		return NewValI32(v1.MustGetI32() | v2.MustGetI32()), nil
+		return NewValI32(v1.MustGetI32() ^ v2.MustGetI32()), nil
 	})
 }
 

@@ -75,6 +75,40 @@ func NewValI64(v uint64) *Val {
 	return &result
 }
 
+func NewValF32(v uint32) *Val {
+	b := make([]byte, 0, 5)
+	buf := bytes.NewBuffer(b)
+	bew := NewBinaryEncodingWriter(buf)
+	err := bew.WriteU8(byte(OpcodeF32Const))
+	if err != nil {
+		panic(err)
+	}
+	err = bew.WriteVaruintN(32, uint64(v))
+	if err != nil {
+		panic(err)
+	}
+
+	result := Val(buf.Bytes())
+	return &result
+}
+
+func NewValF64(v uint64) *Val {
+	b := make([]byte, 0, 9)
+	buf := bytes.NewBuffer(b)
+	bew := NewBinaryEncodingWriter(buf)
+	err := bew.WriteU8(byte(OpcodeF64Const))
+	if err != nil {
+		panic(err)
+	}
+	err = bew.WriteVaruintN(64, v)
+	if err != nil {
+		panic(err)
+	}
+
+	result := Val(buf.Bytes())
+	return &result
+}
+
 func (v *Val) GetI32() (uint32, error) {
 	ber := NewBinaryEncodingReader(bytes.NewReader(*v))
 	opcode, err := ber.ReadU8()
@@ -149,9 +183,11 @@ func (v *Val) GetType() (*ValType, error) {
 func (v *Val) String() string {
 	switch Opcode((*v)[0]) {
 	case OpcodeI32Const:
-		return fmt.Sprintf("i32:%d", v.MustGetI32())
+		x := v.MustGetI32()
+		return fmt.Sprintf("i32:%#08x %d %d", x, uint32(x), int32(x))
 	case OpcodeI64Const:
-		return fmt.Sprintf("i64:%d", v.MustGetI64())
+		x := v.MustGetI64()
+		return fmt.Sprintf("i64:%#016x %d %d", x, uint64(x), int64(x))
 	case OpcodeF32Const:
 		return fmt.Sprintf("f32:- (not implemented)")
 	case OpcodeF64Const:

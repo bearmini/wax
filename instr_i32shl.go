@@ -21,7 +21,8 @@ func (instr *InstrI32Shl) Opcode() Opcode {
 
 func (instr *InstrI32Shl) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, binop(rt, ValTypeI32, func(v1, v2 *Val) (*Val, error) {
-		return NewValI32(v1.MustGetI32() << v2.MustGetI32()), nil
+		shift := (v2.MustGetI32() & 0x1f)
+		return NewValI32(v1.MustGetI32() << shift), nil
 	})
 }
 

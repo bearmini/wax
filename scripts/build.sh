@@ -6,6 +6,7 @@ set -e
 export GO111MODULE=on
 USE_DOCKER_TINYGO=0
 TINYGO_VERSION=0.8.0
+WASM_EXECUTABLE=wasm
 
 tinygo_available() {
   command -v tinygo > /dev/null 2>&1 && {
@@ -30,6 +31,19 @@ wat2wasm_available() {
   command -v wat2wasm > /dev/null 2>&1 && {
     return 0
   }
+  return 1
+}
+
+wasm_available() {
+  command -v wasm > /dev/null 2>&1 && {
+    return 0
+  }
+
+  vendor_interpreter="$d/vendor/WebAssembly/spec/interpreter/wasm"
+  if [ -x "$vendor_interpreter" ]; then
+    WASM_EXECUTABLE="$vendor_interpreter"
+    return 0
+  fi
   return 1
 }
 
@@ -73,6 +87,15 @@ build_with_wat2wasm() {
   cd -
 }
 
+build_with_wasm() {
+  dir=$1
+  src=$2
+
+  cd "$dir"
+  $WASM_EXECUTABLE -d "$dir/$src" -o "$dir/${src/%\.wast/.wasm}"
+  cd -
+}
+
 strip() {
   dir=$1
   src=$2
@@ -110,4 +133,12 @@ if wat2wasm_available; then
   build_with_wat2wasm "$d/examples/wat/loop_test" main.wat
 else
   echo "skipping building examples written in wat, as 'wat2wasm' is not available"
+fi
+
+if wasm_available; then
+  spectestdir="$d/vendor/WebAssembly/spec/test/core"
+  build_with_wasm "$spectestdir" block.wast
+  build_with_wasm "$spectestdir" i32.wast
+else
+  echo "skipping building spec tests written in wast, as 'wasm' is not available"
 fi

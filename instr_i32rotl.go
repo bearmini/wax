@@ -23,7 +23,7 @@ func (instr *InstrI32Rotl) Perform(ctx context.Context, rt *Runtime) (*Label, er
 	return nil, binop(rt, ValTypeI32, func(v1, v2 *Val) (*Val, error) {
 		k := v2.MustGetI32() % 32
 		i1 := v1.MustGetI32()
-		return NewValI32((i1 << k) | (i1>>32 - k)), nil
+		return NewValI32((i1 << k) | (i1>>(32 - k))), nil
 	})
 }
 

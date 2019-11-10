@@ -32,31 +32,31 @@ const (
 	OpcodeGlobalSet Opcode = 0x24
 
 	// Memory-related operators
-	OpcodeI32Load       Opcode = 0x28
-	OpcodeI64Load       Opcode = 0x29
-	OpcodeF32Load       Opcode = 0x2a
-	OpcodeF64Load       Opcode = 0x2b
-	OpcodeI32Load8s     Opcode = 0x2c
-	OpcodeI32Load8u     Opcode = 0x2d
-	OpcodeI32Load16s    Opcode = 0x2e
-	OpcodeI32Load16u    Opcode = 0x2f
-	OpcodeI64Load8s     Opcode = 0x30
-	OpcodeI64Load8u     Opcode = 0x31
-	OpcodeI64Load16s    Opcode = 0x32
-	OpcodeI64Load16u    Opcode = 0x33
-	OpcodeI64Load32s    Opcode = 0x34
-	OpcodeI64Load32u    Opcode = 0x35
-	OpcodeI32Store      Opcode = 0x36
-	OpcodeI64Store      Opcode = 0x37
-	OpcodeF32Store      Opcode = 0x38
-	OpcodeF64Store      Opcode = 0x39
-	OpcodeI32Store8     Opcode = 0x3a
-	OpcodeI32Store16    Opcode = 0x3b
-	OpcodeI64Store8     Opcode = 0x3c
-	OpcodeI64Store16    Opcode = 0x3d
-	OpcodeI64Store32    Opcode = 0x3e
+	OpcodeI32Load    Opcode = 0x28
+	OpcodeI64Load    Opcode = 0x29
+	OpcodeF32Load    Opcode = 0x2a
+	OpcodeF64Load    Opcode = 0x2b
+	OpcodeI32Load8s  Opcode = 0x2c
+	OpcodeI32Load8u  Opcode = 0x2d
+	OpcodeI32Load16s Opcode = 0x2e
+	OpcodeI32Load16u Opcode = 0x2f
+	OpcodeI64Load8s  Opcode = 0x30
+	OpcodeI64Load8u  Opcode = 0x31
+	OpcodeI64Load16s Opcode = 0x32
+	OpcodeI64Load16u Opcode = 0x33
+	OpcodeI64Load32s Opcode = 0x34
+	OpcodeI64Load32u Opcode = 0x35
+	OpcodeI32Store   Opcode = 0x36
+	OpcodeI64Store   Opcode = 0x37
+	OpcodeF32Store   Opcode = 0x38
+	OpcodeF64Store   Opcode = 0x39
+	OpcodeI32Store8  Opcode = 0x3a
+	OpcodeI32Store16 Opcode = 0x3b
+	OpcodeI64Store8  Opcode = 0x3c
+	OpcodeI64Store16 Opcode = 0x3d
+	OpcodeI64Store32 Opcode = 0x3e
 	OpcodeMemorySize Opcode = 0x3f
-	OpcodeMemoryGrow    Opcode = 0x40
+	OpcodeMemoryGrow Opcode = 0x40
 
 	// Constants
 	OpcodeI32Const Opcode = 0x41
@@ -103,7 +103,7 @@ const (
 	// Numeric operators
 	OpcodeI32Clz      Opcode = 0x67
 	OpcodeI32Ctz      Opcode = 0x68
-	OpcodeI32PopCnt   Opcode = 0x69
+	OpcodeI32Popcnt   Opcode = 0x69
 	OpcodeI32Add      Opcode = 0x6a
 	OpcodeI32Sub      Opcode = 0x6b
 	OpcodeI32Mul      Opcode = 0x6c
@@ -121,7 +121,7 @@ const (
 	OpcodeI32Rotr     Opcode = 0x78
 	OpcodeI64Clz      Opcode = 0x79
 	OpcodeI64Ctz      Opcode = 0x7a
-	OpcodeI64PopCnt   Opcode = 0x7b
+	OpcodeI64Popcnt   Opcode = 0x7b
 	OpcodeI64Add      Opcode = 0x7c
 	OpcodeI64Sub      Opcode = 0x7d
 	OpcodeI64Mul      Opcode = 0x7e

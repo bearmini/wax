@@ -111,14 +111,14 @@ func parseFuncArgs(args []string) ([]*wax.Val, error) {
 		v := s[1]
 		switch t {
 		case "i32":
-			vi, err := strconv.Atoi(v)
+			vi, err := parseI32(v)
 			if err != nil {
-				return nil, errors.Errorf("invalid arg format: `%s`", arg)
+				return nil, errors.Errorf("invalid arg: `%s`", arg)
 			}
 			result = append(result, wax.NewValI32(uint32(vi)))
 
 		default:
-			return nil, errors.Errorf("invalid arg format: `%s`", arg)
+			return nil, errors.Errorf("invalid arg: `%s`", arg)
 		}
 	}
 
@@ -128,4 +128,26 @@ func parseFuncArgs(args []string) ([]*wax.Val, error) {
 	}
 
 	return result, nil
+}
+
+func parseI32(s string) (uint32, error) {
+	u, err := strconv.ParseUint(s, 0, 32)
+	if err == nil {
+		return uint32(u), nil
+	}
+
+	ne, ok := err.(*strconv.NumError)
+	if !ok {
+		return 0, err
+	}
+	if ne.Err != strconv.ErrSyntax { // ParseUint() fails for negative numbers such as "-123" with ErrSyntax. So we will try ParseInt() if the error is ErrSyntax
+		return 0, err
+	}
+
+	i, err := strconv.ParseInt(s, 0, 32)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint32(i), nil
 }

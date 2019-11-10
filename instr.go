@@ -112,6 +112,10 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Const(opc, ber)
 	case OpcodeI64Const: // 0x42
 		return ParseInstrI64Const(opc, ber)
+	case OpcodeF32Const: // 0x43
+		return ParseInstrF32Const(opc, ber)
+	case OpcodeF64Const: // 0x44
+		return ParseInstrF64Const(opc, ber)
 	case OpcodeI32Eqz: // 0x45
 		return ParseInstrI32Eqz(opc, ber)
 	case OpcodeI32Eq: // 0x46
@@ -144,6 +148,8 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Clz(opc, ber)
 	case OpcodeI32Ctz: // 0x68
 		return ParseInstrI32Ctz(opc, ber)
+	case OpcodeI32Popcnt: // 0x69
+		return ParseInstrI32Popcnt(opc, ber)
 	case OpcodeI32Add: // 0x6a
 		return ParseInstrI32Add(opc, ber)
 	case OpcodeI32Sub: // 0x6b
@@ -154,6 +160,10 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Divs(opc, ber)
 	case OpcodeI32Divu: // 0x6e
 		return ParseInstrI32Divu(opc, ber)
+	case OpcodeI32Rems: // 0x6f
+		return ParseInstrI32Rems(opc, ber)
+	case OpcodeI32Remu: // 0x70
+		return ParseInstrI32Remu(opc, ber)
 	case OpcodeI32And: // 0x71
 		return ParseInstrI32And(opc, ber)
 	case OpcodeI32Or: // 0x72
@@ -168,6 +178,8 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Shru(opc, ber)
 	case OpcodeI32Rotl: // 0x77
 		return ParseInstrI32Rotl(opc, ber)
+	case OpcodeI32Rotr: // 0x78
+		return ParseInstrI32Rotr(opc, ber)
 	case OpcodeI64Sub: // 0x7d
 		return ParseInstrI64Sub(opc, ber)
 	case OpcodeI64Mul: // 0x7e
