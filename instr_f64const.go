@@ -2,25 +2,33 @@ package wax
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
+	"math"
+
+	"github.com/pkg/errors"
 )
 
 type InstrF64Const struct {
 	opcode Opcode
-	N      uint64
+	N      float64
 	NBytes []byte
 }
 
 func ParseInstrF64Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrF64Const, error) {
-	n64, nBytes, err := ber.ReadVaruintN(64)
+	b := make([]byte, 8)
+	n, err := ber.Read(b)
 	if err != nil {
 		return nil, err
+	}
+	if n != len(b) {
+		return nil, errors.New("insufficient data")
 	}
 
 	return &InstrF64Const{
 		opcode: opcode,
-		N:      n64,
-		NBytes: nBytes,
+		N:      math.Float64frombits(binary.BigEndian.Uint64(b)),
+		NBytes: b,
 	}, nil
 }
 
@@ -35,6 +43,6 @@ func (instr *InstrF64Const) Perform(ctx context.Context, rt *Runtime) (*Label, e
 func (instr *InstrF64Const) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
 		binary:   append([]byte{byte(instr.opcode)}, instr.NBytes...),
-		mnemonic: fmt.Sprintf("f64.const %f (%016x)", instr.N, instr.N),
+		mnemonic: fmt.Sprintf("f64.const %f (%016x)", instr.N, math.Float64bits(instr.N)),
 	}, nil
 }

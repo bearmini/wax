@@ -9,6 +9,12 @@ type InstrI64ExtenduI32 struct {
 	opcode Opcode
 }
 
+func NewInstrI64ExtenduI32() *InstrI64ExtenduI32 {
+	return &InstrI64ExtenduI32{
+		opcode: OpcodeI64ExtenduI32,
+	}
+}
+
 func ParseInstrI64ExtenduI32(opcode Opcode, ber *BinaryEncodingReader) (*InstrI64ExtenduI32, error) {
 	return &InstrI64ExtenduI32{
 		opcode: opcode,

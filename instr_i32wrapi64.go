@@ -9,6 +9,12 @@ type InstrI32WrapI64 struct {
 	opcode Opcode
 }
 
+func NewInstrI32WrapI64() *InstrI32WrapI64 {
+	return &InstrI32WrapI64{
+		opcode: OpcodeI32WrapI64,
+	}
+}
+
 func ParseInstrI32WrapI64(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32WrapI64, error) {
 	return &InstrI32WrapI64{
 		opcode: opcode,

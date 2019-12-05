@@ -16,6 +16,14 @@ type InstrLoop struct {
 	Instructions []Instr
 }
 
+func NewInstrLoop(blockType BlockType, instructions []Instr) *InstrLoop {
+	return &InstrLoop{
+		opcode:       OpcodeLoop,
+		BlockType:    blockType,
+		Instructions: instructions,
+	}
+}
+
 func ParseInstrLoop(opcode Opcode, ber *BinaryEncodingReader) (*InstrLoop, error) {
 	bt, err := ParseBlockType(ber)
 	if err != nil {

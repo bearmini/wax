@@ -13,6 +13,14 @@ type InstrCall struct {
 	FuncIdxBytes []byte
 }
 
+func NewInstrCall(funcIdx FuncIdx, funcIdxBytes []byte) *InstrCall {
+	return &InstrCall{
+		opcode:       OpcodeCall,
+		FuncIdx:      funcIdx,
+		FuncIdxBytes: funcIdxBytes,
+	}
+}
+
 func ParseInstrCall(opcode Opcode, ber *BinaryEncodingReader) (*InstrCall, error) {
 	f64, fBytes, err := ber.ReadVaruintN(32)
 	if err != nil {

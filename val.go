@@ -2,7 +2,9 @@ package wax
 
 import (
 	"bytes"
+	"encoding/binary"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -75,37 +77,26 @@ func NewValI64(v uint64) *Val {
 	return &result
 }
 
-func NewValF32(v uint32) *Val {
+func NewValF32(v float32) *Val {
 	b := make([]byte, 0, 5)
-	buf := bytes.NewBuffer(b)
-	bew := NewBinaryEncodingWriter(buf)
-	err := bew.WriteU8(byte(OpcodeF32Const))
-	if err != nil {
-		panic(err)
-	}
-	err = bew.WriteVaruintN(32, uint64(v))
-	if err != nil {
-		panic(err)
-	}
+	b[0] = byte(OpcodeF32Const)
 
-	result := Val(buf.Bytes())
+	bv := make([]byte, 4)
+	binary.BigEndian.PutUint32(bv, math.Float32bits(v))
+
+	result := Val(b)
 	return &result
 }
 
-func NewValF64(v uint64) *Val {
+func NewValF64(v float64) *Val {
 	b := make([]byte, 0, 9)
-	buf := bytes.NewBuffer(b)
-	bew := NewBinaryEncodingWriter(buf)
-	err := bew.WriteU8(byte(OpcodeF64Const))
-	if err != nil {
-		panic(err)
-	}
-	err = bew.WriteVaruintN(64, v)
-	if err != nil {
-		panic(err)
-	}
+	b[0] = byte(OpcodeF64Const)
 
-	result := Val(buf.Bytes())
+	bv := make([]byte, 8)
+	binary.BigEndian.PutUint64(bv, math.Float64bits(v))
+
+	b = append(b, bv...)
+	result := Val(b)
 	return &result
 }
 

@@ -13,6 +13,14 @@ type InstrBrIf struct {
 	LabelIdxBytes []byte
 }
 
+func NewInstrBrIf(labelIdx LabelIdx, labelIdxBytes []byte) *InstrBrIf {
+	return &InstrBrIf{
+		opcode:        OpcodeBrIf,
+		LabelIdx:      labelIdx,
+		LabelIdxBytes: labelIdxBytes,
+	}
+}
+
 func ParseInstrBrIf(opcode Opcode, ber *BinaryEncodingReader) (*InstrBrIf, error) {
 	l64, lBytes, err := ber.ReadVaruintN(32)
 	if err != nil {

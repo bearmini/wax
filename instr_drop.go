@@ -6,6 +6,12 @@ type InstrDrop struct {
 	opcode Opcode
 }
 
+func NewInstrDrop() *InstrDrop {
+	return &InstrDrop{
+		opcode: OpcodeDrop,
+	}
+}
+
 func ParseInstrDrop(opcode Opcode, ber *BinaryEncodingReader) (*InstrDrop, error) {
 	return &InstrDrop{
 		opcode: opcode,

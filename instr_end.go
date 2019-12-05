@@ -6,6 +6,12 @@ type InstrEnd struct {
 	opcode Opcode
 }
 
+func NewInstrEnd() *InstrEnd {
+	return &InstrEnd{
+		opcode: OpcodeEnd,
+	}
+}
+
 func ParseInstrEnd(opcode Opcode, ber *BinaryEncodingReader) (*InstrEnd, error) {
 	return &InstrEnd{
 		opcode: opcode,

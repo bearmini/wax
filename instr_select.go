@@ -10,6 +10,12 @@ type InstrSelect struct {
 	opcode Opcode
 }
 
+func NewInstrSelect() *InstrSelect {
+	return &InstrSelect{
+		opcode: OpcodeSelect,
+	}
+}
+
 func ParseInstrSelect(opcode Opcode, ber *BinaryEncodingReader) (*InstrSelect, error) {
 	return &InstrSelect{
 		opcode: opcode,

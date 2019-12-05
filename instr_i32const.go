@@ -11,6 +11,14 @@ type InstrI32Const struct {
 	NBytes []byte
 }
 
+func NewInstrI32Const(n uint32, nBytes []byte) *InstrI32Const {
+	return &InstrI32Const{
+		opcode: OpcodeI32Const,
+		N:      n,
+		NBytes: nBytes,
+	}
+}
+
 func ParseInstrI32Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Const, error) {
 	n64, nBytes, err := ber.ReadVarintN(32)
 	if err != nil {

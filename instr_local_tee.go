@@ -13,6 +13,14 @@ type InstrLocalTee struct {
 	LocalIdxBytes []byte
 }
 
+func NewInstrLocalTee(localIdx LocalIdx, localIdxBytes []byte) *InstrLocalTee {
+	return &InstrLocalTee{
+		opcode:        OpcodeLocalTee,
+		LocalIdx:      localIdx,
+		LocalIdxBytes: localIdxBytes,
+	}
+}
+
 func ParseInstrLocalTee(opcode Opcode, ber *BinaryEncodingReader) (*InstrLocalTee, error) {
 	x64, xBytes, err := ber.ReadVaruintN(32)
 	if err != nil {

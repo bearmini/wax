@@ -88,6 +88,8 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrF32Load(opc, ber)
 	case OpcodeF64Load: // 0x2b
 		return ParseInstrF64Load(opc, ber)
+	case OpcodeI32Load8s: // 0x2c
+		return ParseInstrI32Load8s(opc, ber)
 	case OpcodeI32Load8u: // 0x2d
 		return ParseInstrI32Load8u(opc, ber)
 	case OpcodeI32Load16s: // 0x2e

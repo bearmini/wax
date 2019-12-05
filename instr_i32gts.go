@@ -9,6 +9,12 @@ type InstrI32Gts struct {
 	opcode Opcode
 }
 
+func NewInstrI32Gts() *InstrI32Gts {
+	return &InstrI32Gts{
+		opcode: OpcodeI32Gts,
+	}
+}
+
 func ParseInstrI32Gts(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Gts, error) {
 	return &InstrI32Gts{
 		opcode: opcode,

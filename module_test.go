@@ -1,10 +1,9 @@
-package wax_test
+package wax
 
 import (
 	"bytes"
 	"testing"
 
-	"github.com/bearmini/wax"
 	"github.com/kylelemons/godebug/pretty"
 )
 
@@ -12,7 +11,7 @@ func TestParseModule(t *testing.T) {
 	testData := []struct {
 		Name     string
 		Wasm     []byte
-		Expected *wax.Module
+		Expected *Module
 	}{
 		{
 			Name: "pattern 1 - rustc examples/add/main.rs && wastrip ",
@@ -67,103 +66,104 @@ func TestParseModule(t *testing.T) {
 				0x37, 0x63, 0x32, 0x32, 0x33, 0x20, 0x32, 0x30, 0x31, 0x39, 0x2d, 0x30, 0x31, 0x2d, 0x31, 0x36,
 				0x29,
 			},
-			Expected: &wax.Module{
-				Preamble: wax.Preamble{
+			Expected: &Module{
+				valid: true,
+				Preamble: Preamble{
 					MagicNumber: 0x6d736100,
 					Version:     0x00000001,
 				},
-				Sections: []wax.Section{
-					&wax.TypeSection{
-						SectionBase: wax.SectionBase{
-							ID:      wax.TypeSectionID,
+				Sections: []Section{
+					&TypeSection{
+						SectionBase: SectionBase{
+							ID:      TypeSectionID,
 							Size:    0x0a,
 							Content: []byte{0x02, 0x60, 0x00, 0x00, 0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f},
 						},
-						FuncTypes: []*wax.FuncType{
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{},
-								ReturnTypes: []wax.ValType{},
+						FuncTypes: []FuncType{
+							{
+								ParamTypes:  []ValType{},
+								ReturnTypes: []ValType{},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{0x7f, 0x7f},
-								ReturnTypes: []wax.ValType{0x7f},
+							{
+								ParamTypes:  []ValType{0x7f, 0x7f},
+								ReturnTypes: []ValType{0x7f},
 							},
 						},
 					},
-					&wax.FunctionSection{
-						SectionBase: wax.SectionBase{
-							ID:      wax.FunctionSectionID,
+					&FunctionSection{
+						SectionBase: SectionBase{
+							ID:      FunctionSectionID,
 							Size:    0x03,
 							Content: []byte{0x02, 0x00, 0x01},
 						},
-						Types: []wax.TypeIdx{wax.TypeIdx(0x00), wax.TypeIdx(0x01)},
+						Types: []TypeIdx{TypeIdx(0x00), TypeIdx(0x01)},
 					},
-					&wax.TableSection{
-						SectionBase: wax.SectionBase{
-							ID:      wax.TableSectionID,
+					&TableSection{
+						SectionBase: SectionBase{
+							ID:      TableSectionID,
 							Size:    0x05,
 							Content: []byte{0x01, 0x70, 0x01, 0x01, 0x01},
 						},
-						TableTypes: []*wax.TableType{
+						TableTypes: []*TableType{
 							{
-								ElementType: wax.ElemType(0x70),
-								Limits: wax.Limits{
+								ElementType: ElemType(0x70),
+								Limits: Limits{
 									Min: 1,
 									Max: &[]uint32{1}[0],
 								},
 							},
 						},
 					},
-					&wax.MemorySection{
-						SectionBase: wax.SectionBase{
-							ID:      wax.MemorySectionID,
+					&MemorySection{
+						SectionBase: SectionBase{
+							ID:      MemorySectionID,
 							Size:    0x03,
 							Content: []byte{0x01, 0x00, 0x10},
 						},
-						MemTypes: []*wax.MemType{
+						MemTypes: []*MemType{
 							{
-								Limits: wax.Limits{
+								Limits: Limits{
 									Min: 0x10,
 								},
 							},
 						},
 					},
-					&wax.GlobalSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.GlobalSectionID,
+					&GlobalSection{
+						SectionBase: SectionBase{
+							ID:   GlobalSectionID,
 							Size: 0x19,
 							Content: []byte{
 								0x03, 0x7f, 0x01, 0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b, 0x7f, 0x00, 0x41, 0x80, 0x80, 0xc0, 0x00,
 								0x0b, 0x7f, 0x00, 0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b,
 							},
 						},
-						Globals: []*wax.Global{
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValTypeI32,
+						Globals: []*Global{
+							&Global{
+								Type: GlobalType{
+									R: ValTypeI32,
 									M: 0x01,
 								},
-								Init: wax.InitExpr{0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b},
+								Init: InitExpr{0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b},
 							},
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValTypeI32,
+							&Global{
+								Type: GlobalType{
+									R: ValTypeI32,
 									M: 0x00,
 								},
-								Init: wax.InitExpr{0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b},
+								Init: InitExpr{0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b},
 							},
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValTypeI32,
+							&Global{
+								Type: GlobalType{
+									R: ValTypeI32,
 									M: 0x00,
 								},
-								Init: wax.InitExpr{0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b},
+								Init: InitExpr{0x41, 0x80, 0x80, 0xc0, 0x00, 0x0b},
 							},
 						},
 					},
-					&wax.ExportSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.ExportSectionID,
+					&ExportSection{
+						SectionBase: SectionBase{
+							ID:   ExportSectionID,
 							Size: 0x47,
 							Content: []byte{
 								0x05, 0x06, 0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79, 0x02, 0x00, 0x19, 0x5f, 0x5f, 0x69, 0x6e, 0x64,
@@ -173,83 +173,83 @@ func TestParseModule(t *testing.T) {
 								0x02, 0x03, 0x61, 0x64, 0x64, 0x00, 0x01,
 							},
 						},
-						Exports: []*wax.Export{
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79})),
-								DescType: wax.ExportDescTypeMem,
-								Desc:     &[]wax.MemIdx{0x00}[0],
+						Exports: []*Export{
+							&Export{
+								Nm:       Name(string([]byte{0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79})),
+								DescType: ExportDescTypeMem,
+								Desc:     &[]MemIdx{0x00}[0],
 							},
-							&wax.Export{
-								Nm: wax.Name(string([]byte{
+							&Export{
+								Nm: Name(string([]byte{
 									0x5f, 0x5f, 0x69, 0x6e, 0x64, 0x69, 0x72, 0x65, 0x63, 0x74, 0x5f, 0x66, 0x75, 0x6e, 0x63, 0x74,
 									0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x61, 0x62, 0x6c, 0x65,
 								})),
-								DescType: wax.ExportDescTypeTable,
-								Desc:     &[]wax.TableIdx{0x00}[0],
+								DescType: ExportDescTypeTable,
+								Desc:     &[]TableIdx{0x00}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x5f, 0x68, 0x65, 0x61, 0x70, 0x5f, 0x62, 0x61, 0x73, 0x65})),
-								DescType: wax.ExportDescTypeGlobal,
-								Desc:     &[]wax.GlobalIdx{0x01}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x5f, 0x68, 0x65, 0x61, 0x70, 0x5f, 0x62, 0x61, 0x73, 0x65})),
+								DescType: ExportDescTypeGlobal,
+								Desc:     &[]GlobalIdx{0x01}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x64})),
-								DescType: wax.ExportDescTypeGlobal,
-								Desc:     &[]wax.GlobalIdx{0x02}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x64})),
+								DescType: ExportDescTypeGlobal,
+								Desc:     &[]GlobalIdx{0x02}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x61, 0x64, 0x64})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x01}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x61, 0x64, 0x64})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x01}[0],
 							},
 						},
 					},
-					&wax.CodeSection{
-						SectionBase: wax.SectionBase{
-							ID:      wax.CodeSectionID,
+					&CodeSection{
+						SectionBase: SectionBase{
+							ID:      CodeSectionID,
 							Size:    0x0c,
 							Content: []byte{0x02, 0x02, 0x00, 0x0b, 0x07, 0x00, 0x20, 0x01, 0x20, 0x00, 0x6a, 0x0b},
 						},
-						Code: []wax.Code{
-							wax.Code{
+						Code: []Code{
+							Code{
 								Size: 0x02,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x07,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrLocalGet(0x01, []byte{0x01}),
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrI32Add(),
+										NewInstrEnd(),
 									},
 								},
 							},
 						},
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x1b,
 							Content: []byte{
 								0x01, 0x19, 0x02, 0x00, 0x11, 0x5f, 0x5f, 0x77, 0x61, 0x73, 0x6d, 0x5f, 0x63, 0x61, 0x6c, 0x6c,
 								0x5f, 0x63, 0x74, 0x6f, 0x72, 0x73, 0x01, 0x03, 0x61, 0x64, 0x64,
 							},
 						},
-						Name: wax.Name(string([]byte{0x6e, 0x61, 0x6d, 0x65})),
+						Name: Name(string([]byte{0x6e, 0x61, 0x6d, 0x65})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x47,
 							Content: []byte{
 								0x02, 0x08, 0x6c, 0x61, 0x6e, 0x67, 0x75, 0x61, 0x67, 0x65, 0x01, 0x04, 0x52, 0x75, 0x73, 0x74,
@@ -259,7 +259,7 @@ func TestParseModule(t *testing.T) {
 								0x2d, 0x30, 0x31, 0x2d, 0x31, 0x36, 0x29,
 							},
 						},
-						Name: wax.Name(string([]byte{0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x65, 0x72, 0x73})),
+						Name: Name(string([]byte{0x70, 0x72, 0x6f, 0x64, 0x75, 0x63, 0x65, 0x72, 0x73})),
 					},
 				},
 			},
@@ -421,15 +421,16 @@ func TestParseModule(t *testing.T) {
 				0x72, 0x74, 0x03, 0x08, 0x63, 0x77, 0x61, 0x5f, 0x6d, 0x61, 0x69, 0x6e, 0x04, 0x06, 0x6d, 0x65,
 				0x6d, 0x73, 0x65, 0x74, 0x05, 0x03, 0x61, 0x64, 0x64,
 			},
-			Expected: &wax.Module{
-				Preamble: wax.Preamble{
+			Expected: &Module{
+				valid: true,
+				Preamble: Preamble{
 					MagicNumber: 0x6d736100,
 					Version:     0x00000001,
 				},
-				Sections: []wax.Section{
-					&wax.TypeSection{ // 01 15 04 60 00 01 7f 60 00 00 60 03 7f 7f 7f 01 7f 60 02 7f 7f 01 7f
-						SectionBase: wax.SectionBase{
-							ID:   wax.TypeSectionID,
+				Sections: []Section{
+					&TypeSection{ // 01 15 04 60 00 01 7f 60 00 00 60 03 7f 7f 7f 01 7f 60 02 7f 7f 01 7f
+						SectionBase: SectionBase{
+							ID:   TypeSectionID,
 							Size: 0x15,
 							Content: []byte{
 								0x04,
@@ -439,80 +440,80 @@ func TestParseModule(t *testing.T) {
 								0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f,
 							},
 						},
-						FuncTypes: []*wax.FuncType{
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{},
-								ReturnTypes: []wax.ValType{0x7f},
+						FuncTypes: []FuncType{
+							{
+								ParamTypes:  []ValType{},
+								ReturnTypes: []ValType{0x7f},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{},
-								ReturnTypes: []wax.ValType{},
+							{
+								ParamTypes:  []ValType{},
+								ReturnTypes: []ValType{},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{0x7f, 0x7f, 0x7f},
-								ReturnTypes: []wax.ValType{0x7f},
+							{
+								ParamTypes:  []ValType{0x7f, 0x7f, 0x7f},
+								ReturnTypes: []ValType{0x7f},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{0x7f, 0x7f},
-								ReturnTypes: []wax.ValType{0x7f},
+							{
+								ParamTypes:  []ValType{0x7f, 0x7f},
+								ReturnTypes: []ValType{0x7f},
 							},
 						},
 					},
-					&wax.ImportSection{ // 02 15 01 03 65 6e 76 0d 69 6f 5f 67 65 74 5f 73 74 64 6f 75 74 00 00
-						SectionBase: wax.SectionBase{
-							ID:      wax.ImportSectionID,
+					&ImportSection{ // 02 15 01 03 65 6e 76 0d 69 6f 5f 67 65 74 5f 73 74 64 6f 75 74 00 00
+						SectionBase: SectionBase{
+							ID:      ImportSectionID,
 							Size:    0x15,
 							Content: []byte{0x01, 0x03, 0x65, 0x6e, 0x76, 0x0d, 0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74, 0x00, 0x00},
 						},
-						Imports: []*wax.Import{
-							&wax.Import{
-								Mod:  wax.Name("env"),
-								Nm:   wax.Name(string([]byte{0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74})),
-								Desc: wax.TypeIdx(0x00),
+						Imports: []*Import{
+							&Import{
+								Mod:  Name("env"),
+								Nm:   Name(string([]byte{0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74})),
+								Desc: TypeIdx(0x00),
 							},
 						},
 					},
-					&wax.FunctionSection{ // 03 06 05 01 01 01 02 03
-						SectionBase: wax.SectionBase{
-							ID:      wax.FunctionSectionID,
+					&FunctionSection{ // 03 06 05 01 01 01 02 03
+						SectionBase: SectionBase{
+							ID:      FunctionSectionID,
 							Size:    0x06,
 							Content: []byte{0x05, 0x01, 0x01, 0x01, 0x02, 0x03},
 						},
-						Types: []wax.TypeIdx{0x01, 0x01, 0x01, 0x02, 0x03},
+						Types: []TypeIdx{0x01, 0x01, 0x01, 0x02, 0x03},
 					},
-					&wax.TableSection{ // 04 05 01 70 01 01 01
-						SectionBase: wax.SectionBase{
-							ID:      wax.TableSectionID,
+					&TableSection{ // 04 05 01 70 01 01 01
+						SectionBase: SectionBase{
+							ID:      TableSectionID,
 							Size:    0x05,
 							Content: []byte{0x01, 0x70, 0x01, 0x01, 0x01},
 						},
-						TableTypes: []*wax.TableType{
-							&wax.TableType{
-								ElementType: wax.ElemType(0x70),
-								Limits: wax.Limits{
+						TableTypes: []*TableType{
+							&TableType{
+								ElementType: ElemType(0x70),
+								Limits: Limits{
 									Min: 0x01,
 									Max: &[]uint32{0x01}[0],
 								},
 							},
 						},
 					},
-					&wax.MemorySection{ // 05 03 01 00 02
-						SectionBase: wax.SectionBase{
-							ID:      wax.MemorySectionID,
+					&MemorySection{ // 05 03 01 00 02
+						SectionBase: SectionBase{
+							ID:      MemorySectionID,
 							Size:    0x03,
 							Content: []byte{0x01, 0x00, 0x02},
 						},
-						MemTypes: []*wax.MemType{
-							&wax.MemType{
-								Limits: wax.Limits{
+						MemTypes: []*MemType{
+							&MemType{
+								Limits: Limits{
 									Min: 0x02,
 								},
 							},
 						},
 					},
-					&wax.GlobalSection{ // 06 15 03 7f 01 41 80 88 04 0b 7f 00 41 80 88 04 0b 7f 00 41 80 08 0b
-						SectionBase: wax.SectionBase{
-							ID:   wax.GlobalSectionID,
+					&GlobalSection{ // 06 15 03 7f 01 41 80 88 04 0b 7f 00 41 80 88 04 0b 7f 00 41 80 08 0b
+						SectionBase: SectionBase{
+							ID:   GlobalSectionID,
 							Size: 0x15,
 							Content: []byte{
 								0x03,
@@ -521,33 +522,33 @@ func TestParseModule(t *testing.T) {
 								0x7f, 0x00, 0x41, 0x80, 0x08, 0x0b,
 							},
 						},
-						Globals: []*wax.Global{
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValType(0x7f),
+						Globals: []*Global{
+							&Global{
+								Type: GlobalType{
+									R: ValType(0x7f),
 									M: 0x01,
 								},
-								Init: wax.InitExpr{0x41, 0x80, 0x88, 0x04, 0x0b},
+								Init: InitExpr{0x41, 0x80, 0x88, 0x04, 0x0b},
 							},
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValType(0x7f),
+							&Global{
+								Type: GlobalType{
+									R: ValType(0x7f),
 									M: 0x00,
 								},
-								Init: wax.InitExpr{0x41, 0x80, 0x88, 0x04, 0x0b},
+								Init: InitExpr{0x41, 0x80, 0x88, 0x04, 0x0b},
 							},
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValType(0x7f),
+							&Global{
+								Type: GlobalType{
+									R: ValType(0x7f),
 									M: 0x00,
 								},
-								Init: wax.InitExpr{0x41, 0x80, 0x08, 0x0b},
+								Init: InitExpr{0x41, 0x80, 0x08, 0x0b},
 							},
 						},
 					},
-					&wax.ExportSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.ExportSectionID,
+					&ExportSection{
+						SectionBase: SectionBase{
+							ID:   ExportSectionID,
 							Size: 0x48,
 							Content: []byte{
 								0x07, 0x06, 0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79, 0x02, 0x00, 0x0b, 0x5f, 0x5f, 0x68, 0x65, 0x61,
@@ -557,47 +558,47 @@ func TestParseModule(t *testing.T) {
 								0x00, 0x04, 0x03, 0x61, 0x64, 0x64, 0x00, 0x05,
 							},
 						},
-						Exports: []*wax.Export{
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79})),
-								DescType: wax.ExportDescTypeMem,
-								Desc:     &[]wax.MemIdx{0x00}[0],
+						Exports: []*Export{
+							&Export{
+								Nm:       Name(string([]byte{0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79})),
+								DescType: ExportDescTypeMem,
+								Desc:     &[]MemIdx{0x00}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x5f, 0x68, 0x65, 0x61, 0x70, 0x5f, 0x62, 0x61, 0x73, 0x65})),
-								DescType: wax.ExportDescTypeGlobal,
-								Desc:     &[]wax.GlobalIdx{0x01}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x5f, 0x68, 0x65, 0x61, 0x70, 0x5f, 0x62, 0x61, 0x73, 0x65})),
+								DescType: ExportDescTypeGlobal,
+								Desc:     &[]GlobalIdx{0x01}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x64})),
-								DescType: wax.ExportDescTypeGlobal,
-								Desc:     &[]wax.GlobalIdx{0x02}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x64})),
+								DescType: ExportDescTypeGlobal,
+								Desc:     &[]GlobalIdx{0x02}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x73, 0x74, 0x61, 0x72, 0x74})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x02}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x73, 0x74, 0x61, 0x72, 0x74})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x02}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x63, 0x77, 0x61, 0x5f, 0x6d, 0x61, 0x69, 0x6e})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x03}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x63, 0x77, 0x61, 0x5f, 0x6d, 0x61, 0x69, 0x6e})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x03}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x6d, 0x65, 0x6d, 0x73, 0x65, 0x74})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x04}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x6d, 0x65, 0x6d, 0x73, 0x65, 0x74})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x04}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x61, 0x64, 0x64})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x05}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x61, 0x64, 0x64})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x05}[0],
 							},
 						},
 					},
-					&wax.CodeSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CodeSectionID,
+					&CodeSection{
+						SectionBase: SectionBase{
+							ID:   CodeSectionID,
 							Size: 0x4d,
 							Content: []byte{
 								0x05, 0x02, 0x00, 0x0b, 0x09, 0x00, 0x10, 0x80, 0x80, 0x80, 0x80, 0x00, 0x1a, 0x0b, 0x09, 0x00,
@@ -607,99 +608,95 @@ func TestParseModule(t *testing.T) {
 								0x0b, 0x0b, 0x20, 0x00, 0x0b, 0x07, 0x00, 0x20, 0x01, 0x20, 0x00, 0x6a, 0x0b,
 							},
 						},
-						Code: []wax.Code{
-							wax.Code{
+						Code: []Code{
+							Code{
 								Size: 0x02,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x09,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrCall{Opcode: wax.Opcode(0x10), FuncIdx: wax.FuncIdx(0), FuncIdxBytes: []byte{0x80, 0x80, 0x80, 0x80, 0x00}},
-										&wax.InstrDrop{Opcode: wax.Opcode(0x1a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrCall(FuncIdx(0), []byte{0x80, 0x80, 0x80, 0x80, 0x00}),
+										NewInstrDrop(),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x09,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrCall{Opcode: wax.Opcode(0x10), FuncIdx: wax.FuncIdx(0), FuncIdxBytes: []byte{0x80, 0x80, 0x80, 0x80, 0x00}},
-										&wax.InstrDrop{Opcode: wax.Opcode(0x1a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrCall(FuncIdx(0), []byte{0x80, 0x80, 0x80, 0x80, 0x00}),
+										NewInstrDrop(),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x2c,
-								Code: wax.Func{
+								Code: Func{
 									Type: 0,
-									Locals: []wax.ValType{
-										wax.ValType(0x7f),
+									Locals: []ValType{
+										ValType(0x7f),
 									},
-									Body: wax.Expr{
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(0), LocalIdxBytes: []byte{0x00}},
-										&wax.InstrLocalSet{Opcode: wax.Opcode(0x21), LocalIdx: wax.LocalIdx(3), LocalIdxBytes: []byte{0x03}},
-										&wax.InstrBlock{
-											Opcode:    wax.Opcode(0x02),
-											BlockType: wax.BlockType(0x40),
-											Instructions: []wax.Instr{
-												&wax.InstrLoop{Opcode: wax.Opcode(0x03), BlockType: wax.BlockType(0x40), Instructions: []wax.Instr{
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(02), LocalIdxBytes: []byte{0x02}},
-													&wax.InstrI32Eqz{Opcode: wax.Opcode(0x45)},
-													&wax.InstrBrIf{Opcode: wax.Opcode(0x0d), LabelIdx: wax.LabelIdx(0x01), LabelIdxBytes: []byte{0x01}},
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(03), LocalIdxBytes: []byte{0x03}},
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(01), LocalIdxBytes: []byte{0x01}},
-													&wax.InstrI32Store8{Opcode: wax.Opcode(0x3a), MemArg: wax.MemArg{Align: 0x00, Offset: 0x00}, MemArgBytes: []byte{0x00, 0x00}},
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(03), LocalIdxBytes: []byte{0x03}},
-													&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x01, NBytes: []byte{0x01}},
-													&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x21), LocalIdx: wax.LocalIdx(03), LocalIdxBytes: []byte{0x03}},
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(02), LocalIdxBytes: []byte{0x02}},
-													&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x7f, NBytes: []byte{0x7f}},
-													&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-													&wax.InstrLocalGet{Opcode: wax.Opcode(0x21), LocalIdx: wax.LocalIdx(02), LocalIdxBytes: []byte{0x02}},
-													&wax.InstrBr{Opcode: wax.Opcode(0x0c), LabelIdx: wax.LabelIdx(0x00), LabelIdxBytes: []byte{0x00}},
-													&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
-												}},
-												&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
-											},
-										},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(0x00), LocalIdxBytes: []byte{0x00}},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Body: Expr{
+										NewInstrLocalGet(LocalIdx(0), []byte{0x00}),
+										NewInstrLocalSet(LocalIdx(3), []byte{0x03}),
+										NewInstrBlock(BlockType(0x40), []Instr{
+											NewInstrLoop(BlockType(0x40), []Instr{
+												NewInstrLocalGet(LocalIdx(02), []byte{0x02}),
+												NewInstrI32Eqz(),
+												NewInstrBrIf(LabelIdx(0x01), []byte{0x01}),
+												NewInstrLocalGet(LocalIdx(03), []byte{0x03}),
+												NewInstrLocalGet(LocalIdx(01), []byte{0x01}),
+												NewInstrI32Store8(MemArg{Align: 0x00, Offset: 0x00}, []byte{0x00, 0x00}),
+												NewInstrLocalGet(LocalIdx(03), []byte{0x03}),
+												NewInstrI32Const(0x01, []byte{0x01}),
+												NewInstrI32Add(),
+												NewInstrLocalSet(LocalIdx(03), []byte{0x03}),
+												NewInstrLocalGet(LocalIdx(02), []byte{0x02}),
+												NewInstrI32Const(0xffffffff, []byte{0x7f}),
+												NewInstrI32Add(),
+												NewInstrLocalSet(LocalIdx(02), []byte{0x02}),
+												NewInstrBr(LabelIdx(0x00), []byte{0x00}),
+												NewInstrEnd(),
+											}),
+											NewInstrEnd(),
+										}),
+										NewInstrLocalGet(LocalIdx(0x00), []byte{0x00}),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x07,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(0x01), LocalIdxBytes: []byte{0x01}},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(0x00), LocalIdxBytes: []byte{0x00}},
-										&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrLocalGet(LocalIdx(0x01), []byte{0x01}),
+										NewInstrLocalGet(LocalIdx(0x00), []byte{0x00}),
+										NewInstrI32Add(),
+										NewInstrEnd(),
 									},
 								},
 							},
 						},
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0xf8,
 							Content: []byte{
 								0xf4, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00,
@@ -720,19 +717,19 @@ func TestParseModule(t *testing.T) {
 								0x07, 0xb6, 0x00, 0x00, 0x00, 0x07, 0x04, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x6f})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x6f})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:      wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:      CustomSectionID,
 							Size:    0x1,
 							Content: []byte{0x00},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6d, 0x61, 0x63, 0x69, 0x6e, 0x66, 0x6f})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6d, 0x61, 0x63, 0x69, 0x6e, 0x66, 0x6f})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x42,
 							Content: []byte{
 								0x3e, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x00, 0x00, 0x00, 0xdb, 0x00,
@@ -742,11 +739,11 @@ func TestParseModule(t *testing.T) {
 								0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x74, 0x79, 0x70, 0x65, 0x73})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x74, 0x79, 0x70, 0x65, 0x73})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x28,
 							Content: []byte{
 								0x05, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00,
@@ -754,11 +751,11 @@ func TestParseModule(t *testing.T) {
 								0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x73})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x73})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x6f,
 							Content: []byte{
 								0x01, 0x11, 0x01, 0x25, 0x0e, 0x13, 0x05, 0x03, 0x0e, 0x10, 0x17, 0xb4, 0x42, 0x19, 0x11, 0x01,
@@ -770,11 +767,11 @@ func TestParseModule(t *testing.T) {
 								0x13, 0x00, 0x00, 0x07, 0x24, 0x00, 0x03, 0x0e, 0x3e, 0x0b, 0x0b, 0x0b, 0x00, 0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x61, 0x62, 0x62, 0x72, 0x65, 0x76})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x61, 0x62, 0x62, 0x72, 0x65, 0x76})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x110,
 							Content: []byte{
 								0x0c, 0x01, 0x00, 0x00, 0x04, 0x00, 0x88, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0xfb, 0x0e, 0x0d,
@@ -796,11 +793,11 @@ func TestParseModule(t *testing.T) {
 								0x00, 0x00, 0x11, 0x05, 0x0b, 0x0a, 0x28, 0x05, 0x02, 0x06, 0x58, 0x02, 0x01, 0x00, 0x01, 0x01,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6c, 0x69, 0x6e, 0x65})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6c, 0x69, 0x6e, 0x65})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0xc2,
 							Content: []byte{
 								0x54, 0x69, 0x6e, 0x79, 0x47, 0x6f, 0x00, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
@@ -818,11 +815,11 @@ func TestParseModule(t *testing.T) {
 								0x62, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x73, 0x74, 0x72})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x73, 0x74, 0x72})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x80,
 							Content: []byte{
 								0x7c, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x00, 0x00, 0x00, 0x2e, 0x00,
@@ -835,11 +832,11 @@ func TestParseModule(t *testing.T) {
 								0x69, 0x6d, 0x65, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x41, 0x6c, 0x6c, 0x00, 0x00, 0x00, 0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x6e, 0x61, 0x6d, 0x65, 0x73})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x6e, 0x61, 0x6d, 0x65, 0x73})),
 					},
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x44,
 							Content: []byte{
 								0x01, 0x42, 0x06, 0x00, 0x0d, 0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f,
@@ -849,7 +846,7 @@ func TestParseModule(t *testing.T) {
 								0x03, 0x61, 0x64, 0x64,
 							},
 						},
-						Name: wax.Name(string([]byte{0x6e, 0x61, 0x6d, 0x65})),
+						Name: Name(string([]byte{0x6e, 0x61, 0x6d, 0x65})),
 					},
 				},
 			},
@@ -1031,15 +1028,16 @@ func TestParseModule(t *testing.T) {
 				0x6d, 0x73, 0x65, 0x74, 0x05, 0x0d, 0x69, 0x6e, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x65, 0x5f, 0x6c,
 				0x6f, 0x6f, 0x70, 0x06, 0x0b, 0x6e, 0x65, 0x73, 0x74, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x6f, 0x70,
 			},
-			Expected: &wax.Module{
-				Preamble: wax.Preamble{
+			Expected: &Module{
+				valid: true,
+				Preamble: Preamble{
 					MagicNumber: 0x6d736100,
 					Version:     0x00000001,
 				},
-				Sections: []wax.Section{
-					&wax.TypeSection{ // 01 15 04 60 00 01 7f 60 00 00 60 03 7f 7f 7f 01 7f 60 02 7f 7f 01 7f
-						SectionBase: wax.SectionBase{
-							ID:   wax.TypeSectionID,
+				Sections: []Section{
+					&TypeSection{ // 01 15 04 60 00 01 7f 60 00 00 60 03 7f 7f 7f 01 7f 60 02 7f 7f 01 7f
+						SectionBase: SectionBase{
+							ID:   TypeSectionID,
 							Size: 0x15,
 							Content: []byte{
 								0x04,
@@ -1049,80 +1047,80 @@ func TestParseModule(t *testing.T) {
 								0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f,
 							},
 						},
-						FuncTypes: []*wax.FuncType{
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{},
-								ReturnTypes: []wax.ValType{0x7f},
+						FuncTypes: []FuncType{
+							{
+								ParamTypes:  []ValType{},
+								ReturnTypes: []ValType{0x7f},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{},
-								ReturnTypes: []wax.ValType{},
+							{
+								ParamTypes:  []ValType{},
+								ReturnTypes: []ValType{},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{0x7f, 0x7f, 0x7f},
-								ReturnTypes: []wax.ValType{0x7f},
+							{
+								ParamTypes:  []ValType{0x7f, 0x7f, 0x7f},
+								ReturnTypes: []ValType{0x7f},
 							},
-							&wax.FuncType{
-								ParamTypes:  []wax.ValType{0x7f, 0x7f},
-								ReturnTypes: []wax.ValType{0x7f},
+							{
+								ParamTypes:  []ValType{0x7f, 0x7f},
+								ReturnTypes: []ValType{0x7f},
 							},
 						},
 					},
-					&wax.ImportSection{ // 02 15 01 03 65 6e 76 0d 69 6f 5f 67 65 74 5f 73 74 64 6f 75 74 00 00
-						SectionBase: wax.SectionBase{
-							ID:      wax.ImportSectionID,
+					&ImportSection{ // 02 15 01 03 65 6e 76 0d 69 6f 5f 67 65 74 5f 73 74 64 6f 75 74 00 00
+						SectionBase: SectionBase{
+							ID:      ImportSectionID,
 							Size:    0x15,
 							Content: []byte{0x01, 0x03, 0x65, 0x6e, 0x76, 0x0d, 0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74, 0x00, 0x00},
 						},
-						Imports: []*wax.Import{
-							&wax.Import{
-								Mod:  wax.Name(string([]byte{0x65, 0x6e, 0x76})),
-								Nm:   wax.Name(string([]byte{0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74})),
-								Desc: &[]wax.TypeIdx{0x00}[0],
+						Imports: []*Import{
+							&Import{
+								Mod:  Name(string([]byte{0x65, 0x6e, 0x76})),
+								Nm:   Name(string([]byte{0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f, 0x75, 0x74})),
+								Desc: &[]TypeIdx{0x00}[0],
 							},
 						},
 					},
-					&wax.FunctionSection{ // 03 07 06 01 01 01 02 01 03
-						SectionBase: wax.SectionBase{
-							ID:      wax.FunctionSectionID,
+					&FunctionSection{ // 03 07 06 01 01 01 02 01 03
+						SectionBase: SectionBase{
+							ID:      FunctionSectionID,
 							Size:    0x07,
 							Content: []byte{0x06, 0x01, 0x01, 0x01, 0x02, 0x01, 0x03},
 						},
-						Types: []wax.TypeIdx{0x01, 0x01, 0x01, 0x02, 0x01, 0x03},
+						Types: []TypeIdx{0x01, 0x01, 0x01, 0x02, 0x01, 0x03},
 					},
-					&wax.TableSection{ // 04 05 01 70 01 01 01
-						SectionBase: wax.SectionBase{
-							ID:      wax.TableSectionID,
+					&TableSection{ // 04 05 01 70 01 01 01
+						SectionBase: SectionBase{
+							ID:      TableSectionID,
 							Size:    0x05,
 							Content: []byte{0x01, 0x70, 0x01, 0x01, 0x01},
 						},
-						TableTypes: []*wax.TableType{
-							&wax.TableType{
-								ElementType: wax.ElemType(0x70),
-								Limits: wax.Limits{
+						TableTypes: []*TableType{
+							&TableType{
+								ElementType: ElemType(0x70),
+								Limits: Limits{
 									Min: 0x01,
 									Max: &[]uint32{0x01}[0],
 								},
 							},
 						},
 					},
-					&wax.MemorySection{ // 05 03 01 00 02
-						SectionBase: wax.SectionBase{
-							ID:      wax.MemorySectionID,
+					&MemorySection{ // 05 03 01 00 02
+						SectionBase: SectionBase{
+							ID:      MemorySectionID,
 							Size:    0x03,
 							Content: []byte{0x01, 0x00, 0x02},
 						},
-						MemTypes: []*wax.MemType{
-							&wax.MemType{
-								Limits: wax.Limits{
+						MemTypes: []*MemType{
+							&MemType{
+								Limits: Limits{
 									Min: 0x02,
 								},
 							},
 						},
 					},
-					&wax.GlobalSection{ // 06 15 03 7f 01 41 90 88 04 0b 7f 00 41 90 88 04 0b 7f 00 41 84 08 0b
-						SectionBase: wax.SectionBase{
-							ID:   wax.GlobalSectionID,
+					&GlobalSection{ // 06 15 03 7f 01 41 90 88 04 0b 7f 00 41 90 88 04 0b 7f 00 41 84 08 0b
+						SectionBase: SectionBase{
+							ID:   GlobalSectionID,
 							Size: 0x15,
 							Content: []byte{
 								0x03,
@@ -1131,33 +1129,33 @@ func TestParseModule(t *testing.T) {
 								0x7f, 0x00, 0x41, 0x84, 0x08, 0x0b,
 							},
 						},
-						Globals: []*wax.Global{
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValType(0x7f),
+						Globals: []*Global{
+							&Global{
+								Type: GlobalType{
+									R: ValType(0x7f),
 									M: 0x01,
 								},
-								Init: wax.InitExpr{0x41, 0x90, 0x88, 0x04, 0x0b},
+								Init: InitExpr{0x41, 0x90, 0x88, 0x04, 0x0b},
 							},
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValType(0x7f),
+							&Global{
+								Type: GlobalType{
+									R: ValType(0x7f),
 									M: 0x00,
 								},
-								Init: wax.InitExpr{0x41, 0x90, 0x88, 0x04, 0x0b},
+								Init: InitExpr{0x41, 0x90, 0x88, 0x04, 0x0b},
 							},
-							&wax.Global{
-								Type: wax.GlobalType{
-									R: wax.ValType(0x7f),
+							&Global{
+								Type: GlobalType{
+									R: ValType(0x7f),
 									M: 0x00,
 								},
-								Init: wax.InitExpr{0x41, 0x84, 0x08, 0x0b},
+								Init: InitExpr{0x41, 0x84, 0x08, 0x0b},
 							},
 						},
 					},
-					&wax.ExportSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.ExportSectionID,
+					&ExportSection{
+						SectionBase: SectionBase{
+							ID:   ExportSectionID,
 							Size: 0x60,
 							Content: []byte{
 								0x08,
@@ -1171,52 +1169,52 @@ func TestParseModule(t *testing.T) {
 								0x0b, 0x6e, 0x65, 0x73, 0x74, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x6f, 0x70, 0x00, 0x06,
 							},
 						},
-						Exports: []*wax.Export{
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79})),
-								DescType: wax.ExportDescTypeMem,
-								Desc:     &[]wax.MemIdx{0x00}[0],
+						Exports: []*Export{
+							&Export{
+								Nm:       Name(string([]byte{0x6d, 0x65, 0x6d, 0x6f, 0x72, 0x79})),
+								DescType: ExportDescTypeMem,
+								Desc:     &[]MemIdx{0x00}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x5f, 0x68, 0x65, 0x61, 0x70, 0x5f, 0x62, 0x61, 0x73, 0x65})),
-								DescType: wax.ExportDescTypeGlobal,
-								Desc:     &[]wax.GlobalIdx{0x01}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x5f, 0x68, 0x65, 0x61, 0x70, 0x5f, 0x62, 0x61, 0x73, 0x65})),
+								DescType: ExportDescTypeGlobal,
+								Desc:     &[]GlobalIdx{0x01}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x64})),
-								DescType: wax.ExportDescTypeGlobal,
-								Desc:     &[]wax.GlobalIdx{0x02}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x65, 0x6e, 0x64})),
+								DescType: ExportDescTypeGlobal,
+								Desc:     &[]GlobalIdx{0x02}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x5f, 0x73, 0x74, 0x61, 0x72, 0x74})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x02}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x5f, 0x73, 0x74, 0x61, 0x72, 0x74})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x02}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x63, 0x77, 0x61, 0x5f, 0x6d, 0x61, 0x69, 0x6e})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x03}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x63, 0x77, 0x61, 0x5f, 0x6d, 0x61, 0x69, 0x6e})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x03}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x6d, 0x65, 0x6d, 0x73, 0x65, 0x74})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x04}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x6d, 0x65, 0x6d, 0x73, 0x65, 0x74})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x04}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x69, 0x6e, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x65, 0x5f, 0x6c, 0x6f, 0x6f, 0x70})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x05}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x69, 0x6e, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x65, 0x5f, 0x6c, 0x6f, 0x6f, 0x70})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x05}[0],
 							},
-							&wax.Export{
-								Nm:       wax.Name(string([]byte{0x6e, 0x65, 0x73, 0x74, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x6f, 0x70})),
-								DescType: wax.ExportDescTypeFunc,
-								Desc:     &[]wax.FuncIdx{0x06}[0],
+							&Export{
+								Nm:       Name(string([]byte{0x6e, 0x65, 0x73, 0x74, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x6f, 0x70})),
+								DescType: ExportDescTypeFunc,
+								Desc:     &[]FuncIdx{0x06}[0],
 							},
 						},
 					},
-					&wax.CodeSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CodeSectionID,
+					&CodeSection{
+						SectionBase: SectionBase{
+							ID:   CodeSectionID,
 							Size: 0xa6,
 							Content: []byte{
 								0x06,
@@ -1238,154 +1236,152 @@ func TestParseModule(t *testing.T) {
 								0xad, 0x7e, 0x42, 0x01, 0x88, 0xa7, 0x6c, 0x6a, 0x0b,
 							},
 						},
-						Code: []wax.Code{
-							wax.Code{
+						Code: []Code{
+							Code{
 								Size: 0x02,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x09,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrCall{Opcode: wax.Opcode(0x10), FuncIdx: wax.FuncIdx(0), FuncIdxBytes: []byte{0x80, 0x80, 0x80, 0x80, 0x00}},
-										&wax.InstrDrop{Opcode: wax.Opcode(0x1a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrCall(FuncIdx(0), []byte{0x80, 0x80, 0x80, 0x80, 0x00}),
+										NewInstrDrop(),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x09,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrCall{Opcode: wax.Opcode(0x10), FuncIdx: wax.FuncIdx(0), FuncIdxBytes: []byte{0x80, 0x80, 0x80, 0x80, 0x00}},
-										&wax.InstrDrop{Opcode: wax.Opcode(0x1a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrCall(FuncIdx(0), []byte{0x80, 0x80, 0x80, 0x80, 0x00}),
+										NewInstrDrop(),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x2c,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{wax.ValType(0x7f)},
-									Body: wax.Expr{
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrLocalSet{Opcode: wax.Opcode(0x21), LocalIdx: 0x03, LocalIdxBytes: []byte{0x03}},
-										&wax.InstrBlock{Opcode: wax.Opcode(0x02), BlockType: wax.BlockType(0x40), Instructions: []wax.Instr{
-											&wax.InstrLoop{Opcode: wax.Opcode(0x03), BlockType: wax.BlockType(0x40), Instructions: []wax.Instr{
-												&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x02, LocalIdxBytes: []byte{0x02}},
-												&wax.InstrI32Eqz{Opcode: wax.Opcode(0x45)},
-												&wax.InstrBrIf{Opcode: wax.Opcode(0x0d), LabelIdx: 0x01, LabelIdxBytes: []byte{0x01}},
-												&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x03, LocalIdxBytes: []byte{0x03}},
-												&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-												&wax.InstrI32Store8{Opcode: wax.Opcode(0x3a), MemArg: wax.MemArg{Align: 0x00, Offset: 0x00}, MemArgBytes: []byte{0x00, 0x00}},
-												&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x03, LocalIdxBytes: []byte{0x03}},
-												&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x01, NBytes: []byte{0x01}},
-												&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-												&wax.InstrLocalSet{Opcode: wax.Opcode(0x21), LocalIdx: 0x03, LocalIdxBytes: []byte{0x03}},
-												&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x02, LocalIdxBytes: []byte{0x02}},
-												&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x7f, NBytes: []byte{0x7f}},
-												&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-												&wax.InstrLocalSet{Opcode: wax.Opcode(0x21), LocalIdx: 0x02, LocalIdxBytes: []byte{0x02}},
-												&wax.InstrBr{Opcode: wax.Opcode(0x0c), LabelIdx: 0x00, LabelIdxBytes: []byte{0x00}},
-												&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
-											},
-											},
-											&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
-										},
-										},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{ValType(0x7f)},
+									Body: Expr{
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrLocalSet(0x03, []byte{0x03}),
+										NewInstrBlock(BlockType(0x40), []Instr{
+											NewInstrLoop(BlockType(0x40), []Instr{
+												NewInstrLocalGet(0x02, []byte{0x02}),
+												NewInstrI32Eqz(),
+												NewInstrBrIf(0x01, []byte{0x01}),
+												NewInstrLocalGet(0x03, []byte{0x03}),
+												NewInstrLocalGet(0x01, []byte{0x01}),
+												NewInstrI32Store8(MemArg{Align: 0x00, Offset: 0x00}, []byte{0x00, 0x00}),
+												NewInstrLocalGet(0x03, []byte{0x03}),
+												NewInstrI32Const(0x01, []byte{0x01}),
+												NewInstrI32Add(),
+												NewInstrLocalSet(0x03, []byte{0x03}),
+												NewInstrLocalGet(0x02, []byte{0x02}),
+												NewInstrI32Const(0xffffffff, []byte{0x7f}),
+												NewInstrI32Add(),
+												NewInstrLocalSet(0x02, []byte{0x02}),
+												NewInstrBr(0x00, []byte{0x00}),
+												NewInstrEnd(),
+											}),
+											NewInstrEnd(),
+										}),
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x26,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{wax.ValType(0x7f)},
-									Body: wax.Expr{
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-										&wax.InstrLocalSet{Opcode: wax.Opcode(0x21), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrLoop{Opcode: wax.Opcode(0x03), BlockType: wax.BlockType(0x40), Instructions: []wax.Instr{
-											&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-											&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: wax.LocalIdx(0x00), LocalIdxBytes: []byte{0x00}},
-											&wax.InstrI32Store{Opcode: wax.Opcode(0x36), MemArg: wax.MemArg{Align: 0x02, Offset: 0x400}, MemArgBytes: []byte{0x02, 0x80, 0x88, 0x80, 0x80, 0x00}},
-											&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-											&wax.InstrI32Load{Opcode: wax.Opcode(0x28), MemArg: wax.MemArg{Align: 0x02, Offset: 0x400}, MemArgBytes: []byte{0x02, 0x80, 0x88, 0x80, 0x80, 0x00}},
-											&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x01, NBytes: []byte{0x01}},
-											&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-											&wax.InstrLocalSet{Opcode: wax.Opcode(0x21), LocalIdx: wax.LocalIdx(0x00), LocalIdxBytes: []byte{0x00}},
-											&wax.InstrBr{Opcode: wax.Opcode(0x0c), LabelIdx: wax.LabelIdx(0x00), LabelIdxBytes: []byte{0x00}},
-											&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
-										}},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{ValType(0x7f)},
+									Body: Expr{
+										NewInstrI32Const(0x00, []byte{0x00}),
+										NewInstrLocalSet(0x00, []byte{0x00}),
+										NewInstrLoop(BlockType(0x40), []Instr{
+											NewInstrI32Const(0x00, []byte{0x00}),
+											NewInstrLocalGet(LocalIdx(0x00), []byte{0x00}),
+											NewInstrI32Store(MemArg{Align: 0x02, Offset: 0x400}, []byte{0x02, 0x80, 0x88, 0x80, 0x80, 0x00}),
+											NewInstrI32Const(0x00, []byte{0x00}),
+											NewInstrI32Load(MemArg{Align: 0x02, Offset: 0x400}, []byte{0x02, 0x80, 0x88, 0x80, 0x80, 0x00}),
+											NewInstrI32Const(0x01, []byte{0x01}),
+											NewInstrI32Add(),
+											NewInstrLocalSet(LocalIdx(0x00), []byte{0x00}),
+											NewInstrBr(LabelIdx(0x00), []byte{0x00}),
+											NewInstrEnd(),
+										}),
+										NewInstrEnd(),
 									},
 								},
 							},
-							wax.Code{
+							Code{
 								Size: 0x39,
-								Code: wax.Func{
+								Code: Func{
 									Type:   0,
-									Locals: []wax.ValType{},
-									Body: wax.Expr{
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-										&wax.InstrI32Gts{Opcode: wax.Opcode(0x4a)},
-										&wax.InstrSelect{Opcode: wax.Opcode(0x1b)},
-										&wax.InstrLocalTee{Opcode: wax.Opcode(0x22), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x00, NBytes: []byte{0x00}},
-										&wax.InstrI32Gts{Opcode: wax.Opcode(0x4a)},
-										&wax.InstrSelect{Opcode: wax.Opcode(0x1b)},
-										&wax.InstrLocalTee{Opcode: wax.Opcode(0x22), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrI64ExtenduI32{Opcode: wax.Opcode(0xad)},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x7f, NBytes: []byte{0x7f}},
-										&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-										&wax.InstrI64ExtenduI32{Opcode: wax.Opcode(0xad)},
-										&wax.InstrI64Mul{Opcode: wax.Opcode(0x7e)},
-										&wax.InstrI64Const{Opcode: wax.Opcode(0x42), N: 0x01, NBytes: []byte{0x01}},
-										&wax.InstrI64Shru{Opcode: wax.Opcode(0x88)},
-										&wax.InstrI32WrapI64{Opcode: wax.Opcode(0xa7)},
-										&wax.InstrI32Mul{Opcode: wax.Opcode(0x6c)},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x00, LocalIdxBytes: []byte{0x00}},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-										&wax.InstrI64ExtenduI32{Opcode: wax.Opcode(0xad)},
-										&wax.InstrLocalGet{Opcode: wax.Opcode(0x20), LocalIdx: 0x01, LocalIdxBytes: []byte{0x01}},
-										&wax.InstrI32Const{Opcode: wax.Opcode(0x41), N: 0x7f, NBytes: []byte{0x7f}},
-										&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-										&wax.InstrI64ExtenduI32{Opcode: wax.Opcode(0xad)},
-										&wax.InstrI64Mul{Opcode: wax.Opcode(0x7e)},
-										&wax.InstrI64Const{Opcode: wax.Opcode(0x42), N: 0x01, NBytes: []byte{0x01}},
-										&wax.InstrI64Shru{Opcode: wax.Opcode(0x88)},
-										&wax.InstrI32WrapI64{Opcode: wax.Opcode(0xa7)},
-										&wax.InstrI32Mul{Opcode: wax.Opcode(0x6c)},
-										&wax.InstrI32Add{Opcode: wax.Opcode(0x6a)},
-										&wax.InstrEnd{Opcode: wax.Opcode(0x0b)},
+									Locals: []ValType{},
+									Body: Expr{
+										NewInstrLocalGet(0x01, []byte{0x01}),
+										NewInstrI32Const(0x00, []byte{0x00}),
+										NewInstrLocalGet(0x01, []byte{0x01}),
+										NewInstrI32Const(0x00, []byte{0x00}),
+										NewInstrI32Gts(),
+										NewInstrSelect(),
+										NewInstrLocalTee(0x01, []byte{0x01}),
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrI32Const(0x00, []byte{0x00}),
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrI32Const(0x00, []byte{0x00}),
+										NewInstrI32Gts(),
+										NewInstrSelect(),
+										NewInstrLocalTee(0x00, []byte{0x00}),
+										NewInstrI64ExtenduI32(),
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrI32Const(0xffffffff, []byte{0x7f}),
+										NewInstrI32Add(),
+										NewInstrI64ExtenduI32(),
+										NewInstrI64Mul(),
+										NewInstrI64Const(0x01, []byte{0x01}),
+										NewInstrI64Shru(),
+										NewInstrI32WrapI64(),
+										NewInstrI32Mul(),
+										NewInstrLocalGet(0x00, []byte{0x00}),
+										NewInstrLocalGet(0x01, []byte{0x01}),
+										NewInstrI64ExtenduI32(),
+										NewInstrLocalGet(0x01, []byte{0x01}),
+										NewInstrI32Const(0xffffffff, []byte{0x7f}),
+										NewInstrI32Add(),
+										NewInstrI64ExtenduI32(),
+										NewInstrI64Mul(),
+										NewInstrI64Const(0x01, []byte{0x01}),
+										NewInstrI64Shru(),
+										NewInstrI32WrapI64(),
+										NewInstrI32Mul(),
+										NewInstrI32Add(),
+										NewInstrEnd(),
 									},
 								},
 							},
 						},
 					},
 
-					&wax.DataSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.DataSectionID,
+					&DataSection{
+						SectionBase: SectionBase{
+							ID:   DataSectionID,
 							Size: 0x0b,
 							Content: []byte{
 								0x01, 0x00, 0x41, 0x80, 0x08, 0x0b, 0x04, 0x00, 0x00, 0x00, 0x00,
@@ -1393,9 +1389,9 @@ func TestParseModule(t *testing.T) {
 						},
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x010b,
 							Content: []byte{
 								0x07, 0x01, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00,
@@ -1417,23 +1413,23 @@ func TestParseModule(t *testing.T) {
 								0x00, 0x07, 0x01, 0x08, 0xcd, 0x00, 0x00, 0x00, 0x07, 0x04, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x6f})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x69, 0x6e, 0x66, 0x6f})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x01,
 							Content: []byte{
 								0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6d, 0x61, 0x63, 0x69, 0x6e, 0x66, 0x6f})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6d, 0x61, 0x63, 0x69, 0x6e, 0x66, 0x6f})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x42,
 							Content: []byte{
 								0x3e, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x01, 0x00, 0x00, 0xee, 0x00,
@@ -1443,12 +1439,12 @@ func TestParseModule(t *testing.T) {
 								0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x74, 0x79, 0x70, 0x65, 0x73})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x74, 0x79, 0x70, 0x65, 0x73})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x30,
 							Content: []byte{
 								0x05, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00,
@@ -1456,12 +1452,12 @@ func TestParseModule(t *testing.T) {
 								0x6d, 0x00, 0x00, 0x00, 0xa6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x73})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x72, 0x61, 0x6e, 0x67, 0x65, 0x73})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x80,
 							Content: []byte{
 								0x01, 0x11, 0x01, 0x25, 0x0e, 0x13, 0x05, 0x03, 0x0e, 0x10, 0x17, 0xb4, 0x42, 0x19, 0x11, 0x01,
@@ -1474,12 +1470,12 @@ func TestParseModule(t *testing.T) {
 								0x3b, 0x0b, 0x00, 0x00, 0x08, 0x24, 0x00, 0x03, 0x0e, 0x3e, 0x0b, 0x0b, 0x0b, 0x00, 0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x61, 0x62, 0x62, 0x72, 0x65, 0x76})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x61, 0x62, 0x62, 0x72, 0x65, 0x76})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x137,
 							Content: []byte{
 								0x33, 0x01, 0x00, 0x00, 0x04, 0x00, 0x74, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0xfb, 0x0e, 0x0d,
@@ -1504,12 +1500,12 @@ func TestParseModule(t *testing.T) {
 								0x1b, 0x20, 0x02, 0x01, 0x00, 0x01, 0x01,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6c, 0x69, 0x6e, 0x65})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x6c, 0x69, 0x6e, 0x65})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0xdf,
 							Content: []byte{
 								0x54, 0x69, 0x6e, 0x79, 0x47, 0x6f, 0x00, 0x2f, 0x73, 0x72, 0x63, 0x2f, 0x6d, 0x61, 0x69, 0x6e,
@@ -1528,12 +1524,12 @@ func TestParseModule(t *testing.T) {
 								0x74, 0x70, 0x74, 0x72, 0x00, 0x6d, 0x61, 0x78, 0x31, 0x00, 0x6d, 0x61, 0x78, 0x32, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x73, 0x74, 0x72})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x73, 0x74, 0x72})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x8f,
 							Content: []byte{
 								0x8b, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x01, 0x00, 0x00, 0x2e, 0x00,
@@ -1547,12 +1543,12 @@ func TestParseModule(t *testing.T) {
 								0x6d, 0x65, 0x2e, 0x69, 0x6e, 0x69, 0x74, 0x41, 0x6c, 0x6c, 0x00, 0x00, 0x00, 0x00, 0x00,
 							},
 						},
-						Name: wax.Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x6e, 0x61, 0x6d, 0x65, 0x73})),
+						Name: Name(string([]byte{0x2e, 0x64, 0x65, 0x62, 0x75, 0x67, 0x5f, 0x70, 0x75, 0x62, 0x6e, 0x61, 0x6d, 0x65, 0x73})),
 					},
 
-					&wax.CustomSection{
-						SectionBase: wax.SectionBase{
-							ID:   wax.CustomSectionID,
+					&CustomSection{
+						SectionBase: SectionBase{
+							ID:   CustomSectionID,
 							Size: 0x5b,
 							Content: []byte{
 								0x01, 0x59, 0x07, 0x00, 0x0d, 0x69, 0x6f, 0x5f, 0x67, 0x65, 0x74, 0x5f, 0x73, 0x74, 0x64, 0x6f,
@@ -1563,7 +1559,7 @@ func TestParseModule(t *testing.T) {
 								0x6e, 0x65, 0x73, 0x74, 0x65, 0x64, 0x5f, 0x6c, 0x6f, 0x6f, 0x70,
 							},
 						},
-						Name: wax.Name(string([]byte{0x6e, 0x61, 0x6d, 0x65})),
+						Name: Name(string([]byte{0x6e, 0x61, 0x6d, 0x65})),
 					},
 				},
 			},
@@ -1575,7 +1571,7 @@ func TestParseModule(t *testing.T) {
 		t.Run(data.Name, func(t *testing.T) {
 			t.Parallel()
 
-			v, err := wax.ParseBinaryModule(bytes.NewReader(data.Wasm))
+			v, err := ParseBinaryModule(bytes.NewReader(data.Wasm))
 			if err != nil {
 				t.Fatalf("unexpected error: %+v", err)
 			}

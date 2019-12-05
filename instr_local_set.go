@@ -13,6 +13,14 @@ type InstrLocalSet struct {
 	LocalIdxBytes []byte
 }
 
+func NewInstrLocalSet(localIdx LocalIdx, localIdxBytes []byte) *InstrLocalGet {
+	return &InstrLocalGet{
+		opcode:        OpcodeLocalSet,
+		LocalIdx:      localIdx,
+		LocalIdxBytes: localIdxBytes,
+	}
+}
+
 func ParseInstrLocalSet(opcode Opcode, ber *BinaryEncodingReader) (*InstrLocalSet, error) {
 	x64, xBytes, err := ber.ReadVaruintN(32)
 	if err != nil {

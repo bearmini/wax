@@ -9,6 +9,12 @@ type InstrI32Eqz struct {
 	opcode Opcode
 }
 
+func NewInstrI32Eqz() *InstrI32Eqz {
+	return &InstrI32Eqz{
+		opcode: OpcodeI32Eqz,
+	}
+}
+
 func ParseInstrI32Eqz(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Eqz, error) {
 	return &InstrI32Eqz{
 		opcode: opcode,

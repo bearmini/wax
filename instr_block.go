@@ -16,6 +16,14 @@ type InstrBlock struct {
 	Instructions []Instr
 }
 
+func NewInstrBlock(blockType BlockType, instructions []Instr) *InstrBlock {
+	return &InstrBlock{
+		opcode:       OpcodeBlock,
+		BlockType:    blockType,
+		Instructions: instructions,
+	}
+}
+
 func ParseInstrBlock(opcode Opcode, ber *BinaryEncodingReader) (*InstrBlock, error) {
 	bt, err := ParseBlockType(ber)
 	if err != nil {

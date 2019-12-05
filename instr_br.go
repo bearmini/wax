@@ -13,6 +13,14 @@ type InstrBr struct {
 	LabelIdxBytes []byte
 }
 
+func NewInstrBr(labelIdx LabelIdx, labelIdxBytes []byte) *InstrBr {
+	return &InstrBr{
+		opcode:        OpcodeBr,
+		LabelIdx:      labelIdx,
+		LabelIdxBytes: labelIdxBytes,
+	}
+}
+
 func ParseInstrBr(opcode Opcode, ber *BinaryEncodingReader) (*InstrBr, error) {
 	l64, lBytes, err := ber.ReadVaruintN(32)
 	if err != nil {

@@ -11,6 +11,14 @@ type InstrI32Store struct {
 	MemArgBytes []byte
 }
 
+func NewInstrI32Store(memArg MemArg, memArgBytes []byte) *InstrI32Store {
+	return &InstrI32Store{
+		opcode:      OpcodeI32Store,
+		MemArg:      memArg,
+		MemArgBytes: memArgBytes,
+	}
+}
+
 func ParseInstrI32Store(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Store, error) {
 	ma, maBytes, err := ParseMemArg(ber)
 	if err != nil {

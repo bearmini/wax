@@ -11,6 +11,14 @@ type InstrI64Const struct {
 	NBytes []byte
 }
 
+func NewInstrI64Const(n uint64, nBytes []byte) *InstrI64Const {
+	return &InstrI64Const{
+		opcode: OpcodeI64Const,
+		N:      n,
+		NBytes: nBytes,
+	}
+}
+
 func ParseInstrI64Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrI64Const, error) {
 	n64, nBytes, err := ber.ReadVaruintN(64)
 	if err != nil {
