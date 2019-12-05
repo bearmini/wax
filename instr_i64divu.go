@@ -3,6 +3,8 @@ package wax
 import (
 	"context"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 type InstrI64Divu struct {
@@ -21,7 +23,12 @@ func (instr *InstrI64Divu) Opcode() Opcode {
 
 func (instr *InstrI64Divu) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, binop(rt, ValTypeI64, func(v1, v2 *Val) (*Val, error) {
-		return NewValI64(v1.MustGetI64() / v2.MustGetI64()), nil
+		i1 := v1.MustGetI64()
+		i2 := v2.MustGetI64()
+		if i2 == 0 {
+			return nil, errors.New("integer divide by zero")
+		}
+		return NewValI64(i1 / i2), nil
 	})
 }
 

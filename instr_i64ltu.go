@@ -21,11 +21,11 @@ func (instr *InstrI64Ltu) Opcode() Opcode {
 
 func (instr *InstrI64Ltu) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, relop(rt, ValTypeI64, func(v1, v2 *Val) (*Val, error) {
-		result := uint64(0)
+		result := uint32(0)
 		if v1.MustGetI64() < v2.MustGetI64() {
-			result = uint64(1)
+			result = uint32(1)
 		}
-		return NewValI64(result), nil
+		return NewValI32(result), nil
 	})
 }
 

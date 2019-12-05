@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -102,7 +103,9 @@ func readAllAssertions(r io.Reader) ([]*assertion, error) {
 			}
 			return nil, err
 		}
-		result = append(result, a)
+		if a != nil {
+			result = append(result, a)
+		}
 	}
 	return result, nil
 }
@@ -174,6 +177,9 @@ func parseAssertion(str string) (*assertion, error) {
 				state = stateAssertionType
 			}
 		case stateAssertionType:
+			if tt == "module" || tt == "assert_malformed" || tt == "assert_invalid" {
+				return nil, nil
+			}
 			if tt != "(" {
 				t = tt
 			} else {
@@ -242,6 +248,24 @@ func convertAssertion(a *assertion, fname string) (string, error) {
 				return "", err
 			}
 			return fmt.Sprintf(`a="$( $wax -f "%s" %s "$spec_core_test/%s" )"; assert_equal "$a" "0:%s:%#08x %d %d"`, a.FuncName, argsString(a), fname, rt, rv, rv, int32(rv)), nil
+		case "i64":
+			rv, err := parseI64(rvs)
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf(`a="$( $wax -f "%s" %s "$spec_core_test/%s" )"; assert_equal "$a" "0:%s:%#016x %d %d"`, a.FuncName, argsString(a), fname, rt, rv, rv, int64(rv)), nil
+		case "f32":
+			rv, err := parseF32(rvs)
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf(`a="$( $wax -f "%s" %s "$spec_core_test/%s" )"; assert_equal "$a" "0:%s:%#08x %f"`, a.FuncName, argsString(a), fname, rt, math.Float32bits(rv), rv), nil
+		case "f64":
+			rv, err := parseF64(rvs)
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf(`a="$( $wax -f "%s" %s "$spec_core_test/%s" )"; assert_equal "$a" "0:%s:%#08x %f"`, a.FuncName, argsString(a), fname, rt, math.Float64bits(rv), rv), nil
 		default:
 			return "", errors.New("not implemented yet")
 		}
@@ -249,6 +273,7 @@ func convertAssertion(a *assertion, fname string) (string, error) {
 		return fmt.Sprintf(`set +e
 a="$( $wax -f "%s" %s "$spec_core_test/%s" 2>&1 )"; assert_contains "$a" "%s"
 set -e`, a.FuncName, argsString(a), fname, a.Expected), nil
+
 	default:
 		fmt.Fprintf(os.Stderr, "unknown assertion type %s\n", a.Type)
 		return "", nil
@@ -268,8 +293,16 @@ func replaceExt(fn, newExt string) string {
 func argsString(a *assertion) string {
 	s := []string{}
 	for _, arg := range a.Arguments {
-		argOpt := fmt.Sprintf(`-a "%s:%s"`, getType(arg), getValue(arg))
-		argOpt = padSpace(argOpt, 19)
+		argType := getType(arg)
+		argOpt := fmt.Sprintf(`-a "%s:%s"`, argType, getValue(arg))
+		pad := 0
+		switch argType {
+		case "i32":
+			pad = 19
+		case "i64":
+			pad = 27
+		}
+		argOpt = padSpace(argOpt, pad)
 		s = append(s, argOpt)
 	}
 	return strings.Join(s, " ")
@@ -327,4 +360,35 @@ func parseI32(s string) (uint32, error) {
 	}
 
 	return uint32(i), nil
+}
+
+func parseI64(s string) (uint64, error) {
+	u, err := strconv.ParseUint(s, 0, 64)
+	if err == nil {
+		return uint64(u), nil
+	}
+
+	ne, ok := err.(*strconv.NumError)
+	if !ok {
+		return 0, err
+	}
+	if ne.Err != strconv.ErrSyntax { // ParseUint() fails for negative numbers such as "-123" with ErrSyntax. So we will try ParseInt() if the error is ErrSyntax
+		return 0, err
+	}
+
+	i, err := strconv.ParseInt(s, 0, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return uint64(i), nil
+}
+
+func parseF32(s string) (float32, error) {
+	f, err := strconv.ParseFloat(s, 32)
+	return float32(f), err
+}
+
+func parseF64(s string) (float64, error) {
+	return strconv.ParseFloat(s, 64)
 }

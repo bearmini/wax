@@ -137,8 +137,12 @@ fi
 
 if wasm_available; then
   spectestdir="$d/vendor/WebAssembly/spec/test/core"
+  build_with_wasm "$spectestdir" address.wast
   build_with_wasm "$spectestdir" block.wast
   build_with_wasm "$spectestdir" i32.wast
+  build_with_wasm "$spectestdir" i64.wast
+
+  "$d/scripts/generate-standard-tests.sh"
 else
   echo "skipping building spec tests written in wast, as 'wasm' is not available"
 fi

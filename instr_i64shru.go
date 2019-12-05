@@ -21,7 +21,8 @@ func (instr *InstrI64Shru) Opcode() Opcode {
 
 func (instr *InstrI64Shru) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, binop(rt, ValTypeI64, func(v1, v2 *Val) (*Val, error) {
-		return NewValI64(v1.MustGetI64() >> v2.MustGetI64()), nil
+		shift := (v2.MustGetI64() & 0x3f)
+		return NewValI64(v1.MustGetI64() >> shift), nil
 	})
 }
 

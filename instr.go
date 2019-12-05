@@ -84,6 +84,10 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Load(opc, ber)
 	case OpcodeI64Load: // 0x29
 		return ParseInstrI64Load(opc, ber)
+	case OpcodeF32Load: // 0x2a
+		return ParseInstrF32Load(opc, ber)
+	case OpcodeF64Load: // 0x2b
+		return ParseInstrF64Load(opc, ber)
 	case OpcodeI32Load8u: // 0x2d
 		return ParseInstrI32Load8u(opc, ber)
 	case OpcodeI32Load16s: // 0x2e
@@ -138,12 +142,30 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Ges(opc, ber)
 	case OpcodeI32Geu: // 0x4f
 		return ParseInstrI32Geu(opc, ber)
+
+	case OpcodeI64Eqz: // 0x50
+		return ParseInstrI64Eqz(opc, ber)
+	case OpcodeI64Eq: // 0x51
+		return ParseInstrI64Eq(opc, ber)
+	case OpcodeI64Ne: // 0x52
+		return ParseInstrI64Ne(opc, ber)
+	case OpcodeI64Lts: // 0x53
+		return ParseInstrI64Lts(opc, ber)
 	case OpcodeI64Ltu: // 0x54
 		return ParseInstrI64Ltu(opc, ber)
+	case OpcodeI64Gts: // 0x55
+		return ParseInstrI64Gts(opc, ber)
 	case OpcodeI64Gtu: // 0x56
 		return ParseInstrI64Gtu(opc, ber)
+	case OpcodeI64Les: // 0x57
+		return ParseInstrI64Les(opc, ber)
 	case OpcodeI64Leu: // 0x58
 		return ParseInstrI64Leu(opc, ber)
+	case OpcodeI64Ges: // 0x59
+		return ParseInstrI64Ges(opc, ber)
+	case OpcodeI64Geu: // 0x5a
+		return ParseInstrI64Geu(opc, ber)
+
 	case OpcodeI32Clz: // 0x67
 		return ParseInstrI32Clz(opc, ber)
 	case OpcodeI32Ctz: // 0x68
@@ -180,14 +202,44 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Rotl(opc, ber)
 	case OpcodeI32Rotr: // 0x78
 		return ParseInstrI32Rotr(opc, ber)
+
+	case OpcodeI64Clz: // 0x79
+		return ParseInstrI64Clz(opc, ber)
+	case OpcodeI64Ctz: // 0x7a
+		return ParseInstrI64Ctz(opc, ber)
+	case OpcodeI64Popcnt: // 0x7b
+		return ParseInstrI64Popcnt(opc, ber)
+	case OpcodeI64Add: // 0x7c
+		return ParseInstrI64Add(opc, ber)
 	case OpcodeI64Sub: // 0x7d
 		return ParseInstrI64Sub(opc, ber)
 	case OpcodeI64Mul: // 0x7e
 		return ParseInstrI64Mul(opc, ber)
+	case OpcodeI64Divs: // 0x7f
+		return ParseInstrI64Divs(opc, ber)
 	case OpcodeI64Divu: // 0x80
 		return ParseInstrI64Divu(opc, ber)
+	case OpcodeI64Rems: // 0x81
+		return ParseInstrI64Rems(opc, ber)
+	case OpcodeI64Remu: // 0x82
+		return ParseInstrI64Remu(opc, ber)
+	case OpcodeI64And: // 0x83
+		return ParseInstrI64And(opc, ber)
+	case OpcodeI64Or: // 0x84
+		return ParseInstrI64Or(opc, ber)
+	case OpcodeI64Xor: // 0x85
+		return ParseInstrI64Xor(opc, ber)
+	case OpcodeI64Shl: // 0x86
+		return ParseInstrI64Shl(opc, ber)
+	case OpcodeI64Shrs: // 0x87
+		return ParseInstrI64Shrs(opc, ber)
 	case OpcodeI64Shru: // 0x88
 		return ParseInstrI64Shru(opc, ber)
+	case OpcodeI64Rotl: // 0x89
+		return ParseInstrI64Rotl(opc, ber)
+	case OpcodeI64Rotr: // 0x8a
+		return ParseInstrI64Rotr(opc, ber)
+
 	case OpcodeI32WrapI64: // 0xa7
 		return ParseInstrI32WrapI64(opc, ber)
 	case OpcodeI64ExtenduI32: // 0xad

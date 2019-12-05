@@ -29,10 +29,10 @@ func (instr *InstrI32Divs) Perform(ctx context.Context, rt *Runtime) (*Label, er
 		if i2 == 0 {
 			return nil, errors.New("integer divide by zero")
 		}
-		res := int64(i1) / int64(i2)
-		if res > math.MaxInt32 || res < math.MinInt32 {
+		if (i1 == math.MinInt32 && i2 == -1) {
 			return nil, errors.New("integer overflow")
 		}
+		res := i1 / i2
 		return NewValI32(uint32(res)), nil
 	})
 }
