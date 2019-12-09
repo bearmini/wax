@@ -28,6 +28,37 @@ val ::= i32.const i32
 */
 type Val []byte
 
+func NewVal(t ValType, v interface{}) (*Val, error) {
+	switch t {
+	case ValTypeI32:
+		x, ok := v.(uint32)
+		if !ok {
+			return nil, errors.New("invalid type")
+		}
+		return NewValI32(x), nil
+	case ValTypeI64:
+		x, ok := v.(uint64)
+		if !ok {
+			return nil, errors.New("invalid type")
+		}
+		return NewValI64(x), nil
+	case ValTypeF32:
+		x, ok := v.(float32)
+		if !ok {
+			return nil, errors.New("invalid type")
+		}
+		return NewValF32(x), nil
+	case ValTypeF64:
+		x, ok := v.(float64)
+		if !ok {
+			return nil, errors.New("invalid type")
+		}
+		return NewValF64(x), nil
+	default:
+		return nil, errors.New("invalid val type")
+	}
+}
+
 func NewZeroVal(t ValType) (*Val, error) {
 	switch t {
 	case ValTypeI32:
@@ -35,9 +66,9 @@ func NewZeroVal(t ValType) (*Val, error) {
 	case ValTypeI64:
 		return NewValI64(0), nil
 	case ValTypeF32:
-		return nil, errors.New("not implemented")
+		return NewValF32(0.0), nil
 	case ValTypeF64:
-		return nil, errors.New("not implemented")
+		return NewValF64(0.0), nil
 	default:
 		return nil, errors.New("invalid val type")
 	}
@@ -51,7 +82,7 @@ func NewValI32(v uint32) *Val {
 	if err != nil {
 		panic(err)
 	}
-	err = bew.WriteVaruintN(32, uint64(v))
+	err = bew.WriteVaruint(uint64(v))
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +99,7 @@ func NewValI64(v uint64) *Val {
 	if err != nil {
 		panic(err)
 	}
-	err = bew.WriteVaruintN(64, v)
+	err = bew.WriteVaruint(v)
 	if err != nil {
 		panic(err)
 	}
@@ -78,24 +109,21 @@ func NewValI64(v uint64) *Val {
 }
 
 func NewValF32(v float32) *Val {
-	b := make([]byte, 0, 5)
+	b := make([]byte, 5)
 	b[0] = byte(OpcodeF32Const)
 
-	bv := make([]byte, 4)
-	binary.BigEndian.PutUint32(bv, math.Float32bits(v))
+	binary.LittleEndian.PutUint32(b[1:], math.Float32bits(v))
 
 	result := Val(b)
 	return &result
 }
 
 func NewValF64(v float64) *Val {
-	b := make([]byte, 0, 9)
+	b := make([]byte, 9)
 	b[0] = byte(OpcodeF64Const)
 
-	bv := make([]byte, 8)
-	binary.BigEndian.PutUint64(bv, math.Float64bits(v))
+	binary.LittleEndian.PutUint64(b[1:], math.Float64bits(v))
 
-	b = append(b, bv...)
 	result := Val(b)
 	return &result
 }
@@ -136,6 +164,42 @@ func (v *Val) GetI64() (uint64, error) {
 	return uint64(val), nil
 }
 
+func (v *Val) GetF32() (float32, error) {
+	ber := NewBinaryEncodingReader(bytes.NewReader(*v))
+	opcode, err := ber.ReadU8()
+	if err != nil {
+		return 0, err
+	}
+
+	if Opcode(opcode) != OpcodeF32Const {
+		return 0, errors.New("type mismatch")
+	}
+
+	val, err := ber.ReadU32LE()
+	if err != nil {
+		return 0, err
+	}
+	return math.Float32frombits(val), nil
+}
+
+func (v *Val) GetF64() (float64, error) {
+	ber := NewBinaryEncodingReader(bytes.NewReader(*v))
+	opcode, err := ber.ReadU8()
+	if err != nil {
+		return 0, err
+	}
+
+	if Opcode(opcode) != OpcodeF64Const {
+		return 0, errors.New("type mismatch")
+	}
+
+	val, err := ber.ReadU64LE()
+	if err != nil {
+		return 0, err
+	}
+	return math.Float64frombits(val), nil
+}
+
 func (v *Val) MustGetI32() uint32 {
 	u, err := v.GetI32()
 	if err != nil {
@@ -146,6 +210,22 @@ func (v *Val) MustGetI32() uint32 {
 
 func (v *Val) MustGetI64() uint64 {
 	u, err := v.GetI64()
+	if err != nil {
+		panic(err)
+	}
+	return u
+}
+
+func (v *Val) MustGetF32() float32 {
+	u, err := v.GetF32()
+	if err != nil {
+		panic(err)
+	}
+	return u
+}
+
+func (v *Val) MustGetF64() float64 {
+	u, err := v.GetF64()
 	if err != nil {
 		panic(err)
 	}
@@ -171,6 +251,49 @@ func (v *Val) GetType() (*ValType, error) {
 	}
 }
 
+func (v *Val) EqualsTo(x *Val) bool {
+	vt1, err := v.GetType()
+	if err != nil {
+		return false
+	}
+
+	vt2, err := x.GetType()
+	if err != nil {
+		return false
+	}
+
+	if *vt1 != *vt2 {
+		return false
+	}
+
+	switch *vt1 {
+	case ValTypeI32:
+		v1 := v.MustGetI32()
+		v2 := x.MustGetI32()
+		return v1 == v2
+	case ValTypeI64:
+		v1 := v.MustGetI64()
+		v2 := x.MustGetI64()
+		return v1 == v2
+	case ValTypeF32:
+		v1 := v.MustGetF32()
+		v2 := x.MustGetF32()
+		if math.IsNaN(float64(v1)) && math.IsNaN(float64(v2)) {
+			return true
+		}
+		return v1 == v2
+	case ValTypeF64:
+		v1 := v.MustGetF64()
+		v2 := x.MustGetF64()
+		if math.IsNaN(v1) && math.IsNaN(v2) {
+			return true
+		}
+		return v1 == v2
+	default:
+		return false
+	}
+}
+
 func (v *Val) String() string {
 	switch Opcode((*v)[0]) {
 	case OpcodeI32Const:
@@ -180,9 +303,11 @@ func (v *Val) String() string {
 		x := v.MustGetI64()
 		return fmt.Sprintf("i64:%#016x %d %d", x, uint64(x), int64(x))
 	case OpcodeF32Const:
-		return fmt.Sprintf("f32:- (not implemented)")
+		x := v.MustGetF32()
+		return fmt.Sprintf("f32:%#08x %f", math.Float32bits(x), x)
 	case OpcodeF64Const:
-		return fmt.Sprintf("f64:- (not implemented)")
+		x := v.MustGetF64()
+		return fmt.Sprintf("f64:%#016x %f", math.Float64bits(x), x)
 	default:
 		return "-"
 	}

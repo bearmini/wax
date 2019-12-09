@@ -27,7 +27,7 @@ func ParseInstrF64Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrF64Cons
 
 	return &InstrF64Const{
 		opcode: opcode,
-		N:      math.Float64frombits(binary.BigEndian.Uint64(b)),
+		N:      math.Float64frombits(binary.LittleEndian.Uint64(b)),
 		NBytes: b,
 	}, nil
 }

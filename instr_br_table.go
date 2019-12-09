@@ -91,15 +91,17 @@ func (instr *InstrBrTable) Perform(ctx context.Context, rt *Runtime) (*Label, er
 	// 3. If i is smaller than the length of l*, then:
 	if i < uint32(len(instr.Ls)) {
 		// (a) Let li be the label l*[i].
-		//li := instr.Ls[i]
+		li := instr.Ls[i]
 
 		// (b) Execute the instruction (br li).
-		return nil, errors.New("not implemented")
+		ib := InstrBr{LabelIdx: li}
+		return ib.Perform(ctx, rt)
 	}
 
 	// 4. Else:
 	//   (a) Execute the instruction (br lN).
-	return nil, errors.New("not implemented")
+	ib := InstrBr{LabelIdx: instr.Ln}
+	return ib.Perform(ctx, rt)
 }
 
 func (instr *InstrBrTable) Disassemble() (*disasmLineComponents, error) {

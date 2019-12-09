@@ -3,6 +3,7 @@ package wax
 import (
 	"context"
 	"encoding/binary"
+	"math"
 
 	"github.com/pkg/errors"
 )
@@ -96,20 +97,38 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI32Load16s(opc, ber)
 	case OpcodeI32Load16u: // 0x2f
 		return ParseInstrI32Load16u(opc, ber)
+	case OpcodeI64Load8s: // 0x30
+		return ParseInstrI64Load8s(opc, ber)
+	case OpcodeI64Load8u: // 0x31
+		return ParseInstrI64Load8u(opc, ber)
+	case OpcodeI64Load16s: // 0x32
+		return ParseInstrI64Load16s(opc, ber)
+	case OpcodeI64Load16u: // 0x33
+		return ParseInstrI64Load16u(opc, ber)
+	case OpcodeI64Load32s: // 0x34
+		return ParseInstrI64Load32s(opc, ber)
 	case OpcodeI64Load32u: // 0x35
 		return ParseInstrI64Load32u(opc, ber)
 	case OpcodeI32Store: // 0x36
 		return ParseInstrI32Store(opc, ber)
 	case OpcodeI64Store: // 0x37
 		return ParseInstrI64Store(opc, ber)
+	case OpcodeF32Store: // 0x38
+		return ParseInstrF32Store(opc, ber)
+	case OpcodeF64Store: // 0x39
+		return ParseInstrF64Store(opc, ber)
 	case OpcodeI32Store8: // 0x3a
 		return ParseInstrI32Store8(opc, ber)
 	case OpcodeI32Store16: // 0x3b
 		return ParseInstrI32Store16(opc, ber)
-
+	case OpcodeI64Store8: // 0x3c
+		return ParseInstrI64Store8(opc, ber)
+	case OpcodeI64Store16: // 0x3d
+		return ParseInstrI64Store16(opc, ber)
+	case OpcodeI64Store32: // 0x3e
+		return ParseInstrI64Store32(opc, ber)
 	case OpcodeMemorySize: // 0x3f
 		return ParseInstrMemorySize(opc, ber)
-
 	case OpcodeMemoryGrow: // 0x40
 		return ParseInstrMemoryGrow(opc, ber)
 
@@ -167,6 +186,19 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 		return ParseInstrI64Ges(opc, ber)
 	case OpcodeI64Geu: // 0x5a
 		return ParseInstrI64Geu(opc, ber)
+
+	case OpcodeF64Eq: // 0x61
+		return ParseInstrF64Eq(opc, ber)
+	case OpcodeF64Ne: // 0x62
+		return ParseInstrF64Ne(opc, ber)
+	case OpcodeF64Lt: // 0x63
+		return ParseInstrF64Lt(opc, ber)
+	case OpcodeF64Gt: // 0x64
+		return ParseInstrF64Gt(opc, ber)
+	case OpcodeF64Le: // 0x65
+		return ParseInstrF64Le(opc, ber)
+	case OpcodeF64Ge: // 0x66
+		return ParseInstrF64Ge(opc, ber)
 
 	case OpcodeI32Clz: // 0x67
 		return ParseInstrI32Clz(opc, ber)
@@ -539,7 +571,7 @@ func loadN(rt *Runtime, t ValType, largeN int, sx string, memArg MemArg) error {
 	var c *Val
 	if origN != 0 && sx != "" {
 		// (a)  Let n be the integer for which bytes iN(n) = b*.
-		n, err := bytesToInteger(b, largeN)
+		n, err := bytesToVal(t, b, largeN)
 		if err != nil {
 			return err
 		}
@@ -550,7 +582,7 @@ func loadN(rt *Runtime, t ValType, largeN int, sx string, memArg MemArg) error {
 		}
 	} else {
 		// (a)  Let c be the constant for which bytes t(c) = b*.
-		c, err = bytesToInteger(b, largeN)
+		c, err = bytesToVal(t, b, largeN)
 		if err != nil {
 			return err
 		}
@@ -618,8 +650,8 @@ func storeN(rt *Runtime, t ValType, largeN int, memArg MemArg) error {
 		return err
 	}
 	ct, err := c.GetType()
-	if err != nil || *ct != ValTypeI32 {
-		return errors.New("type mismatch")
+	if err != nil || *ct != t {
+		return errors.Errorf("type mismatch: expected %s, actual: %s", t, ct)
 	}
 
 	// 8.  Assert: due to validation, a value of value type i32 is on the top of the stack.
@@ -780,30 +812,50 @@ func wrap(t ValType, largeN int, i *Val) (*Val, error) {
 	}
 }
 
-func bytesToInteger(b []byte, size int) (*Val, error) {
-	switch size {
-	case 8:
-		if len(b) < 1 {
-			return nil, errors.New("insufficient data")
+func bytesToVal(t ValType, b []byte, size int) (*Val, error) {
+	switch t {
+	case ValTypeI32, ValTypeI64:
+		switch size {
+		case 8:
+			if len(b) < 1 {
+				return nil, errors.New("insufficient data")
+			}
+			return NewValI32(uint32(b[0])), nil
+		case 16:
+			if len(b) < 2 {
+				return nil, errors.New("insufficient data")
+			}
+			return NewValI32(uint32(binary.LittleEndian.Uint16(b))), nil
+		case 32:
+			if len(b) < 4 {
+				return nil, errors.New("insufficient data")
+			}
+			return NewValI32(binary.LittleEndian.Uint32(b)), nil
+		case 64:
+			if len(b) < 8 {
+				return nil, errors.New("insufficient data")
+			}
+			return NewValI64(binary.LittleEndian.Uint64(b)), nil
+		default:
+			return nil, errors.New("invalid size")
 		}
-		return NewValI32(uint32(b[0])), nil
-	case 16:
-		if len(b) < 2 {
-			return nil, errors.New("insufficient data")
+	case ValTypeF32, ValTypeF64:
+		switch size {
+		case 32:
+			if len(b) < 4 {
+				return nil, errors.New("insufficient data")
+			}
+			return NewValF32(math.Float32frombits(binary.LittleEndian.Uint32(b))), nil
+		case 64:
+			if len(b) < 8 {
+				return nil, errors.New("insufficient data")
+			}
+			return NewValF64(math.Float64frombits(binary.LittleEndian.Uint64(b))), nil
+		default:
+			return nil, errors.New("invalid size")
 		}
-		return NewValI32(uint32(binary.LittleEndian.Uint16(b))), nil
-	case 32:
-		if len(b) < 4 {
-			return nil, errors.New("insufficient data")
-		}
-		return NewValI32(binary.LittleEndian.Uint32(b)), nil
-	case 64:
-		if len(b) < 8 {
-			return nil, errors.New("insufficient data")
-		}
-		return NewValI64(binary.LittleEndian.Uint64(b)), nil
 	default:
-		return nil, errors.New("invalid size")
+		return nil, errors.New("invalid val type")
 	}
 }
 
@@ -843,6 +895,8 @@ func valToBytes(size int, v *Val) ([]byte, error) {
 			binary.LittleEndian.PutUint32(b, uint32(v.MustGetI32()))
 		case ValTypeI64:
 			binary.LittleEndian.PutUint32(b, uint32(v.MustGetI64()))
+		case ValTypeF32:
+			binary.LittleEndian.PutUint32(b, math.Float32bits(v.MustGetF32()))
 		default:
 			return nil, errors.New("invalid type")
 		}
@@ -854,6 +908,8 @@ func valToBytes(size int, v *Val) ([]byte, error) {
 			binary.LittleEndian.PutUint64(b, uint64(v.MustGetI32()))
 		case ValTypeI64:
 			binary.LittleEndian.PutUint64(b, uint64(v.MustGetI64()))
+		case ValTypeF64:
+			binary.LittleEndian.PutUint64(b, math.Float64bits(v.MustGetF64()))
 		default:
 			return nil, errors.New("invalid type")
 		}

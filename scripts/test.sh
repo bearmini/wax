@@ -6,11 +6,6 @@ set -e
 source "$d/scripts/test_common.sh"
 
 wax="$d/cmd/wax/wax"
-spec_core_test="$d/vendor/WebAssembly/spec/test/core"
-
-bash "$d/scripts/standard-test-address.sh"
-bash "$d/scripts/standard-test-i32.sh"
-bash "$d/scripts/standard-test-i64.sh"
 
 a="$( $wax -f "add" -a "i32:123" -a "i32:234" "$d/examples/go/add/main.wasm" )"; assert_equal "$a" "0:i32:0x00000165 357 357"
 a="$( $wax -f "sub" -a "i32:123" -a "i32:23"  "$d/examples/go/add/main.wasm" )"; assert_equal "$a" "0:i32:0x00000064 100 100"

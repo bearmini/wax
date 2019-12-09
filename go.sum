@@ -1,3 +1,11 @@
+github.com/bearmini/sexp v0.0.0-20191205053723-4d6fd06e9966 h1:F2fV8U1A/Ixls70QJxio3n5RvgEuxKVhl+Zl/P61wKY=
+github.com/bearmini/sexp v0.0.0-20191205053723-4d6fd06e9966/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
+github.com/bearmini/sexp v0.0.0-20191205073053-a6770b8579fc h1:yUYeSBFjNA/kmGMVgr6EvSQTG19V/xXErxQfMNa+o2Q=
+github.com/bearmini/sexp v0.0.0-20191205073053-a6770b8579fc/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
+github.com/bearmini/sexp v0.0.0-20191206064629-6f9addaf3d19 h1:y/iXw89qkQtJ2zIgq1cDBRQKxRYKJD2RMcCGmMveTEI=
+github.com/bearmini/sexp v0.0.0-20191206064629-6f9addaf3d19/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
+github.com/bearmini/sexp v0.0.0-20191208134133-89424404ac18 h1:YxE5kSnhqFphGWXOHY4MAZ8U2T7zSJKgXtMz5OUzcPI=
+github.com/bearmini/sexp v0.0.0-20191208134133-89424404ac18/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=

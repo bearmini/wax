@@ -36,7 +36,7 @@ func (p *Preamble) Encode(w io.Writer) error {
 }
 
 func ParsePreamble(ber *BinaryEncodingReader) (*Preamble, error) {
-	mn, err := ber.ReadU32()
+	mn, err := ber.ReadU32LE()
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func ParsePreamble(ber *BinaryEncodingReader) (*Preamble, error) {
 		return nil, errors.New("invalid magic number")
 	}
 
-	v, err := ber.ReadU32()
+	v, err := ber.ReadU32LE()
 	if err != nil {
 		return nil, err
 	}

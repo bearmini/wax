@@ -27,7 +27,7 @@ func ParseInstrF32Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrF32Cons
 
 	return &InstrF32Const{
 		opcode: opcode,
-		N:      math.Float32frombits(binary.BigEndian.Uint32(b)),
+		N:      math.Float32frombits(binary.LittleEndian.Uint32(b)),
 		NBytes: b,
 	}, nil
 }

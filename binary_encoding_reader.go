@@ -33,7 +33,33 @@ func (ber *BinaryEncodingReader) ReadU8() (uint8, error) {
 	return b[0], nil
 }
 
-func (ber *BinaryEncodingReader) ReadU32() (uint32, error) {
+func (ber *BinaryEncodingReader) ReadU16LE() (uint16, error) {
+	b := make([]byte, 2)
+	n, err := ber.r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	if n != 2 {
+		return 0, errors.New("unable to read 2 bytes")
+	}
+
+	return binary.LittleEndian.Uint16(b), nil
+}
+
+func (ber *BinaryEncodingReader) ReadU16BE() (uint16, error) {
+	b := make([]byte, 2)
+	n, err := ber.r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	if n != 2 {
+		return 0, errors.New("unable to read 2 bytes")
+	}
+
+	return binary.BigEndian.Uint16(b), nil
+}
+
+func (ber *BinaryEncodingReader) ReadU32LE() (uint32, error) {
 	b := make([]byte, 4)
 	n, err := ber.r.Read(b)
 	if err != nil {
@@ -44,6 +70,45 @@ func (ber *BinaryEncodingReader) ReadU32() (uint32, error) {
 	}
 
 	return binary.LittleEndian.Uint32(b), nil
+}
+
+func (ber *BinaryEncodingReader) ReadU32BE() (uint32, error) {
+	b := make([]byte, 4)
+	n, err := ber.r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	if n != 4 {
+		return 0, errors.New("unable to read 4 bytes")
+	}
+
+	return binary.BigEndian.Uint32(b), nil
+}
+
+func (ber *BinaryEncodingReader) ReadU64LE() (uint64, error) {
+	b := make([]byte, 8)
+	n, err := ber.r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	if n != 8 {
+		return 0, errors.New("unable to read 8 bytes")
+	}
+
+	return binary.LittleEndian.Uint64(b), nil
+}
+
+func (ber *BinaryEncodingReader) ReadU64BE() (uint64, error) {
+	b := make([]byte, 8)
+	n, err := ber.r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	if n != 8 {
+		return 0, errors.New("unable to read 8 bytes")
+	}
+
+	return binary.BigEndian.Uint64(b), nil
 }
 
 func (ber *BinaryEncodingReader) ReadVaruintN(n uint) (uint64, []byte, error) {

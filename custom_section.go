@@ -34,7 +34,7 @@ func (s *CustomSection) Encode(w *BinaryEncodingWriter) error {
 	bb := bytes.NewBuffer([]byte{})
 	bew := NewBinaryEncodingWriter(bb)
 
-	err := bew.WriteVaruintN(32, uint64(len(s.Name)))
+	err := bew.WriteVaruint(uint64(len(s.Name)))
 	if err != nil {
 		return err
 	}

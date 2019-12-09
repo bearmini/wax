@@ -15,12 +15,12 @@ func (s SectionBase) GetID() SectionID {
 }
 
 func (s SectionBase) Encode(bew *BinaryEncodingWriter) error {
-	err := bew.WriteVaruintN(7, uint64(s.ID))
+	err := bew.WriteVaruint(uint64(s.ID))
 	if err != nil {
 		return err
 	}
 
-	err = bew.WriteVaruintN(32, uint64(s.Size))
+	err = bew.WriteVaruint(uint64(s.Size))
 	if err != nil {
 		return err
 	}

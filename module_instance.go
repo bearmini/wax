@@ -181,16 +181,54 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 	//     i. Fail.
 
 	// 10. For each data segment data_i in module.data, do:
-	//   (a) Let doval_i be the result of evaluating the expression data_i.offset.
-	//   (b) Assert: due to validation, doval_i is of the form i32.const do_i.
-	//   (c) Let memidx_𝑖 be the memory index data_i.data.
-	//   (d) Assert: due to validation, moduleinst.memaddrs[memidx_i] exists.
-	//   (e) Let memaddr_i be the memory address moduleinst.memaddrs[memidx_i].
-	//   (f) Assert: due to validation, S'.mems[memaddr_i] exists.
-	//   (g) Let meminst_i be the memory instance S'.mems[memaddr_𝑖].
-	//   (h) Let dend_i be do_i plus the length of data_i.init.
-	//   (i) If dend_i is larger than the length of meminst_i.data, then:
-	//     i. Fail.
+	ds := m.GetDataSection()
+	if ds != nil {
+		for _, d := range ds.Data {
+			//   (a) Let doval_i be the result of evaluating the expression data_i.offset.
+			if len(d.Offset) < 1 {
+				return nil, errors.New("unsupported data offset expression")
+			}
+			doVal := d.Offset[0]
+
+			//   (b) Assert: due to validation, doval_i is of the form i32.const do_i.
+			if doVal.Opcode() != OpcodeI32Const {
+				return nil, errors.New("unsupported data offset expression")
+			}
+
+			do, ok := doVal.(*InstrI32Const)
+			if !ok {
+				return nil, errors.New("unsupported data offset expression")
+			}
+
+			//   (c) Let memidx_𝑖 be the memory index data_i.data.
+			memIdx := d.Data
+
+			//   (d) Assert: due to validation, moduleinst.memaddrs[memidx_i] exists.
+			if len(mi.MemAddrs) <= int(memIdx) {
+				return nil, errors.New("invalid memidx")
+			}
+
+			//   (e) Let memaddr_i be the memory address moduleinst.memaddrs[memidx_i].
+			memaddr := mi.MemAddrs[memIdx]
+
+			//   (f) Assert: due to validation, S'.mems[memaddr_i] exists.
+			if len(s.Mems) <= int(memaddr) {
+				return nil, errors.New("invalid memaddr")
+			}
+
+			//   (g) Let meminst_i be the memory instance S'.mems[memaddr_𝑖].
+			meminst := s.Mems[memaddr]
+
+			//   (h) Let dend_i be do_i plus the length of data_i.init.
+			dend := do.N + uint32(len(d.Init))
+
+			//   (i) If dend_i is larger than the length of meminst_i.data, then:
+			if dend > uint32(len(meminst.Data)) {
+				//     i. Fail.
+				return nil, errors.New("invalid data size")
+			}
+		}
+	}
 
 	// 11. Assert: due to validation, the frame F is now on the top of the stack.
 
@@ -203,8 +241,19 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 	//     iii. Replace tableinst_i.elem[eo_i + j] with funcaddr_ij.
 
 	// 14. For each data segment data_i in module.data, do:
-	//   (a) For each byte b_ij in data_i.init (starting with j = 0), do:
-	//     i. Replace meminst_i.data[do_i + j] with b_ij.
+	if ds != nil {
+		for _, d := range ds.Data {
+			//   (a) For each byte b_ij in data_i.init (starting with j = 0), do:
+			//     i. Replace meminst_i.data[do_i + j] with b_ij.
+			memIdx := d.Data
+			ma := mi.MemAddrs[memIdx]
+			meminst := s.Mems[ma]
+			doVal := d.Offset[0]
+			do := doVal.(*InstrI32Const)
+
+			copy(meminst.Data[do.N:], d.Init)
+		}
+	}
 
 	// 15. If the start function module.start is not empty, then:
 	//   (a) Assert: due to validation, moduleinst.funcaddrs[module.start.func] exists.
@@ -285,8 +334,6 @@ func allocModuleInstance(m *Module, s *Store, evs []ExternVal, val []ValType) (*
 
 	// 3. For each table table_i in module.tables, do:
 
-
-	
 	// 4. For each memory mem_i in module.mems, do:
 	// 8. Let memaddr* be the the concatenation of the memory addresses memaddr_i in index order.
 	mems := m.GetMems()

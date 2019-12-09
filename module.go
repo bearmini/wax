@@ -66,6 +66,22 @@ func (m *Module) GetFunctionSection() *FunctionSection {
 	return nil
 }
 
+func (m *Module) GetTableSection() *TableSection {
+	for _, s := range m.Sections {
+		if s.GetID() != TableSectionID {
+			continue
+		}
+
+		ts, ok := s.(*TableSection)
+		if !ok {
+			return nil
+		}
+
+		return ts
+	}
+	return nil
+}
+
 func (m *Module) GetMemorySection() *MemorySection {
 	for _, s := range m.Sections {
 		if s.GetID() != MemorySectionID {
@@ -78,6 +94,22 @@ func (m *Module) GetMemorySection() *MemorySection {
 		}
 
 		return ms
+	}
+	return nil
+}
+
+func (m *Module) GetGlobalSection() *GlobalSection {
+	for _, s := range m.Sections {
+		if s.GetID() != GlobalSectionID {
+			continue
+		}
+
+		gs, ok := s.(*GlobalSection)
+		if !ok {
+			return nil
+		}
+
+		return gs
 	}
 	return nil
 }
@@ -114,6 +146,22 @@ func (m *Module) GetStartSection() *StartSection {
 	return nil
 }
 
+func (m *Module) GetElementSection() *ElementSection {
+	for _, s := range m.Sections {
+		if s.GetID() != ElementSectionID {
+			continue
+		}
+
+		es, ok := s.(*ElementSection)
+		if !ok {
+			return nil
+		}
+
+		return es
+	}
+	return nil
+}
+
 func (m *Module) GetCodeSection() *CodeSection {
 	for _, s := range m.Sections {
 		if s.GetID() != CodeSectionID {
@@ -126,6 +174,22 @@ func (m *Module) GetCodeSection() *CodeSection {
 		}
 
 		return cs
+	}
+	return nil
+}
+
+func (m *Module) GetDataSection() *DataSection {
+	for _, s := range m.Sections {
+		if s.GetID() != DataSectionID {
+			continue
+		}
+
+		ds, ok := s.(*DataSection)
+		if !ok {
+			return nil
+		}
+
+		return ds
 	}
 	return nil
 }
@@ -245,7 +309,7 @@ func ParseBinaryModule(r io.Reader) (*Module, error) {
 	}
 
 	return &Module{
-		valid: true,
+		valid:    true,
 		Preamble: *p,
 		Sections: s,
 	}, nil

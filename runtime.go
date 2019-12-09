@@ -417,7 +417,7 @@ func (rt *Runtime) exitInstructionsWithLabel() error {
 
 	// 3.  Assert: due tovalidation, the label L is now on the top of the stack.
 	if rt.Stack.Top() == nil || rt.Stack.Top().Label == nil {
-		return errors.New("label must be on top of the stack")
+		return errors.Errorf("label must be on top of the stack:\n%s", rt.Stack.Dump())
 	}
 
 	// 4.  Pop the label from the stack.

@@ -37,5 +37,8 @@ func ParseExpr(ber *BinaryEncodingReader) (*Expr, error) {
 		}
 
 		result = append(result, instr)
+		if instr.Opcode() == OpcodeEnd {
+			return &result, nil
+		}
 	}
 }
