@@ -28,7 +28,7 @@ func (instr *InstrF64Nearest) Opcode() Opcode {
 
 func (instr *InstrF64Nearest) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, unop(rt, ValTypeF64, func(v1 *Val) (*Val, error) {
-		return NewValF64(math.Round(v1.MustGetF64())), nil
+		return NewValF64(math.RoundToEven(v1.MustGetF64())), nil
 	})
 }
 

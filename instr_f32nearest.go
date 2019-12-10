@@ -28,7 +28,7 @@ func (instr *InstrF32Nearest) Opcode() Opcode {
 
 func (instr *InstrF32Nearest) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, unop(rt, ValTypeF32, func(v1 *Val) (*Val, error) {
-		return NewValF32(float32(math.Round(float64(v1.MustGetF32())))), nil
+		return NewValF32(float32(math.RoundToEven(float64(v1.MustGetF32())))), nil
 	})
 }
 
