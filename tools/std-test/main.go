@@ -140,6 +140,10 @@ func processSexp(s *sexp.Sexp) error {
 		fmt.Printf("skipping assert_malformed\n")
 	case "assert_invalid":
 		fmt.Printf("skipping assert_invalid\n")
+	case "assert_return_canonical_nan":
+		fmt.Printf("skipping assert_return_canonical_nan\n")
+	case "assert_return_arithmetic_nan":
+		fmt.Printf("skipping assert_return_arithmetic_nan\n")
 	default:
 		return errors.Errorf("not implemented: first atom value: %s", first.Atom.Value)
 	}
@@ -237,17 +241,35 @@ func evalConst(s *sexp.Sexp) (*wax.Val, error) {
 		}
 
 		sat := second.Atom.Type
+		sav := second.Atom.Value
 		switch sat {
 		case sexp.TokenTypeNumber:
+			if strings.HasPrefix(sav, "-nan") {
+				nan, err := wax.ParseNaN32WithPayload(sav)
+				if err != nil {
+					return nil, err
+				}
+				return wax.NewValF32(nan), nil
+			}
+			if strings.HasPrefix(sav, "-inf") {
+				return wax.NewValF32(float32(math.Inf(-1))), nil
+			}
 			buf := bytes.NewBuffer([]byte{})
 			bew := wax.NewBinaryEncodingWriter(buf)
 			err := bew.WriteU8(uint8(wax.OpcodeF32Const))
 			if err != nil {
 				return nil, err
 			}
-			v, err := strconv.ParseFloat(second.Atom.Value, 32)
+			v, err := strconv.ParseFloat(sav, 32)
 			if err != nil {
-				return nil, err
+				if _, ok := err.(*strconv.NumError); !ok {
+					return nil, err
+				}
+				v32, err := wax.ParseHexfloat32(sav)
+				if err != nil {
+					return nil, err
+				}
+				v = float64(v32)
 			}
 			err = bew.WriteU32LE(math.Float32bits(float32(v)))
 			if err != nil {
@@ -257,10 +279,17 @@ func evalConst(s *sexp.Sexp) (*wax.Val, error) {
 			return &val, nil
 
 		case sexp.TokenTypeSymbol:
-			if !strings.HasPrefix(second.Atom.Value, "nan:") {
-				return nil, errors.Errorf("invalid const expression: %s", s.String())
+			if strings.HasPrefix(sav, "nan") {
+				nan, err := wax.ParseNaN32WithPayload(sav)
+				if err != nil {
+					return nil, err
+				}
+				return wax.NewValF32(nan), nil
 			}
-			return wax.NewValF32(float32(math.NaN())), nil
+			if strings.HasPrefix(sav, "inf") {
+				return wax.NewValF32(float32(math.Inf(1))), nil
+			}
+			return nil, errors.Errorf("invalid const expression: %s", s.String())
 
 		default:
 			return nil, errors.Errorf("invalid const expression: %s", s.String())
@@ -273,17 +302,34 @@ func evalConst(s *sexp.Sexp) (*wax.Val, error) {
 		}
 
 		sat := second.Atom.Type
+		sav := second.Atom.Value
 		switch sat {
 		case sexp.TokenTypeNumber:
+			if strings.HasPrefix(sav, "-nan") {
+				nan, err := wax.ParseNaN64WithPayload(sav)
+				if err != nil {
+					return nil, err
+				}
+				return wax.NewValF64(nan), nil
+			}
+			if strings.HasPrefix(sav, "-inf") {
+				return wax.NewValF64(math.Inf(-1)), nil
+			}
 			buf := bytes.NewBuffer([]byte{})
 			bew := wax.NewBinaryEncodingWriter(buf)
 			err := bew.WriteU8(uint8(wax.OpcodeF64Const))
 			if err != nil {
 				return nil, err
 			}
-			v, err := strconv.ParseFloat(second.Atom.Value, 64)
+			v, err := strconv.ParseFloat(sav, 64)
 			if err != nil {
-				return nil, err
+				if _, ok := err.(*strconv.NumError); !ok {
+					return nil, err
+				}
+				v, err = wax.ParseHexfloat64(sav)
+				if err != nil {
+					return nil, err
+				}
 			}
 			err = bew.WriteU64LE(math.Float64bits(float64(v)))
 			if err != nil {
@@ -292,10 +338,17 @@ func evalConst(s *sexp.Sexp) (*wax.Val, error) {
 			val := wax.Val(buf.Bytes())
 			return &val, nil
 		case sexp.TokenTypeSymbol:
-			if !strings.HasPrefix(second.Atom.Value, "nan:") {
-				return nil, errors.Errorf("invalid const expression: %s", s.String())
+			if strings.HasPrefix(sav, "nan") {
+				nan, err := wax.ParseNaN64WithPayload(sav)
+				if err != nil {
+					return nil, err
+				}
+				return wax.NewValF64(nan), nil
 			}
-			return wax.NewValF64(math.NaN()), nil
+			if strings.HasPrefix(sav, "inf") {
+				return wax.NewValF64(math.Inf(1)), nil
+			}
+			return nil, errors.Errorf("invalid const expression: %s", s.String())
 
 		default:
 			return nil, errors.Errorf("invalid const expression: %s", s.String())

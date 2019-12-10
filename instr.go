@@ -187,6 +187,19 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 	case OpcodeI64Geu: // 0x5a
 		return ParseInstrI64Geu(opc, ber)
 
+	case OpcodeF32Eq: // 0x5b
+		return ParseInstrF32Eq(opc, ber)
+	case OpcodeF32Ne: // 0x5c
+		return ParseInstrF32Ne(opc, ber)
+	case OpcodeF32Lt: // 0x5d
+		return ParseInstrF32Lt(opc, ber)
+	case OpcodeF32Gt: // 0x5e
+		return ParseInstrF32Gt(opc, ber)
+	case OpcodeF32Le: // 0x5f
+		return ParseInstrF32Le(opc, ber)
+	case OpcodeF32Ge: // 0x60
+		return ParseInstrF32Ge(opc, ber)
+
 	case OpcodeF64Eq: // 0x61
 		return ParseInstrF64Eq(opc, ber)
 	case OpcodeF64Ne: // 0x62
@@ -274,10 +287,114 @@ func ParseInstr(ber *BinaryEncodingReader) (Instr, error) {
 	case OpcodeI64Rotr: // 0x8a
 		return ParseInstrI64Rotr(opc, ber)
 
+	case OpcodeF32Abs: // 0x8b
+		return ParseInstrF32Abs(opc, ber)
+	case OpcodeF32Neg: // 0x8c
+		return ParseInstrF32Neg(opc, ber)
+	case OpcodeF32Ceil: // 0x8d
+		return ParseInstrF32Ceil(opc, ber)
+	case OpcodeF32Floor: // 0x8e
+		return ParseInstrF32Floor(opc, ber)
+	case OpcodeF32Trunc: // 0x8f
+		return ParseInstrF32Trunc(opc, ber)
+	case OpcodeF32Nearest: // 0x90
+		return ParseInstrF32Nearest(opc, ber)
+	case OpcodeF32Sqrt: // 0x91
+		return ParseInstrF32Sqrt(opc, ber)
+	case OpcodeF32Add: // 0x92
+		return ParseInstrF32Add(opc, ber)
+	case OpcodeF32Sub: // 0x93
+		return ParseInstrF32Sub(opc, ber)
+	case OpcodeF32Mul: // 0x94
+		return ParseInstrF32Mul(opc, ber)
+	case OpcodeF32Div: // 0x95
+		return ParseInstrF32Div(opc, ber)
+	case OpcodeF32Min: // 0x96
+		return ParseInstrF32Min(opc, ber)
+	case OpcodeF32Max: // 0x97
+		return ParseInstrF32Max(opc, ber)
+	case OpcodeF32CopySign: // 0x98
+		return ParseInstrF32CopySign(opc, ber)
+
+	case OpcodeF64Abs: // 0x99
+		return ParseInstrF64Abs(opc, ber)
+	case OpcodeF64Neg: // 0x9a
+		return ParseInstrF64Neg(opc, ber)
+	case OpcodeF64Ceil: // 0x9b
+		return ParseInstrF64Ceil(opc, ber)
+	case OpcodeF64Floor: // 0x9c
+		return ParseInstrF64Floor(opc, ber)
+	case OpcodeF64Trunc: // 0x9d
+		return ParseInstrF64Trunc(opc, ber)
+	case OpcodeF64Nearest: // 0x9e
+		return ParseInstrF64Nearest(opc, ber)
+	case OpcodeF64Sqrt: // 0x9f
+		return ParseInstrF64Sqrt(opc, ber)
+	case OpcodeF64Add: // 0xa0
+		return ParseInstrF64Add(opc, ber)
+	case OpcodeF64Sub: // 0xa1
+		return ParseInstrF64Sub(opc, ber)
+	case OpcodeF64Mul: // 0xa2
+		return ParseInstrF64Mul(opc, ber)
+	case OpcodeF64Div: // 0xa3
+		return ParseInstrF64Div(opc, ber)
+	case OpcodeF64Min: // 0xa4
+		return ParseInstrF64Min(opc, ber)
+	case OpcodeF64Max: // 0xa5
+		return ParseInstrF64Max(opc, ber)
+	case OpcodeF64CopySign: // 0xa6
+		return ParseInstrF64CopySign(opc, ber)
+
 	case OpcodeI32WrapI64: // 0xa7
 		return ParseInstrI32WrapI64(opc, ber)
-	case OpcodeI64ExtenduI32: // 0xad
-		return ParseInstrI64ExtenduI32(opc, ber)
+	case OpcodeI32TruncF32s: // 0xa8
+		return ParseInstrI32TruncF32s(opc, ber)
+	case OpcodeI32TruncF32u: // 0xa9
+		return ParseInstrI32TruncF32u(opc, ber)
+	case OpcodeI32TruncF64s: // 0xaa
+		return ParseInstrI32TruncF64s(opc, ber)
+	case OpcodeI32TruncF64u: // 0xab
+		return ParseInstrI32TruncF64u(opc, ber)
+	case OpcodeI64ExtendI32s: // 0xac
+		return ParseInstrI64ExtendI32s(opc, ber)
+	case OpcodeI64ExtendI32u: // 0xad
+		return ParseInstrI64ExtendI32u(opc, ber)
+	case OpcodeI64TruncF32s: // 0xae
+		return ParseInstrI64TruncF32s(opc, ber)
+	case OpcodeI64TruncF32u: // 0xaf
+		return ParseInstrI64TruncF32u(opc, ber)
+	case OpcodeI64TruncF64s: // 0xb0
+		return ParseInstrI64TruncF64s(opc, ber)
+	case OpcodeI64TruncF64u: // 0xb1
+		return ParseInstrI64TruncF64u(opc, ber)
+	case OpcodeF32ConvertI32s: // 0xb2
+		return ParseInstrF32ConvertI32s(opc, ber)
+	case OpcodeF32ConvertI32u: // 0xb3
+		return ParseInstrF32ConvertI32u(opc, ber)
+	case OpcodeF32ConvertI64s: // 0xb4
+		return ParseInstrF32ConvertI64s(opc, ber)
+	case OpcodeF32ConvertI64u: // 0xb5
+		return ParseInstrF32ConvertI64u(opc, ber)
+	case OpcodeF32DemoteF64: // 0xb6
+		return ParseInstrF32DemoteF64(opc, ber)
+	case OpcodeF64ConvertI32s: // 0xb7
+		return ParseInstrF64ConvertI32s(opc, ber)
+	case OpcodeF64ConvertI32u: // 0xb8
+		return ParseInstrF64ConvertI32u(opc, ber)
+	case OpcodeF64ConvertI64s: // 0xb9
+		return ParseInstrF64ConvertI64s(opc, ber)
+	case OpcodeF64ConvertI64u: // 0xba
+		return ParseInstrF64ConvertI64u(opc, ber)
+	case OpcodeF64PromoteF32: // 0xbb
+		return ParseInstrF64PromoteF32(opc, ber)
+	case OpcodeI32ReinterpretF32: // 0xbc
+		return ParseInstrI32ReinterpretF32(opc, ber)
+	case OpcodeI64ReinterpretF64: // 0xbd
+		return ParseInstrI64ReinterpretF64(opc, ber)
+	case OpcodeF32ReinterpretI32: // 0xbe
+		return ParseInstrF32ReinterpretI32(opc, ber)
+	case OpcodeF64ReinterpretI64: // 0xbf
+		return ParseInstrF64ReinterpretI64(opc, ber)
 
 	default:
 		return nil, errors.Errorf("unknown opcode: %#02x", opc)

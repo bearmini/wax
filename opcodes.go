@@ -168,25 +168,25 @@ const (
 
 	// Conversions
 	OpcodeI32WrapI64     Opcode = 0xa7
-	OpcodeI32TruncsF32   Opcode = 0xa8
-	OpcodeI32TruncuF32   Opcode = 0xa9
-	OpcodeI32TruncsF64   Opcode = 0xaa
-	OpcodeI32TruncuF64   Opcode = 0xab
-	OpcodeI64ExtendsI32  Opcode = 0xac
-	OpcodeI64ExtenduI32  Opcode = 0xad
-	OpcodeI64TruncsF32   Opcode = 0xae
-	OpcodeI64TruncuF32   Opcode = 0xaf
-	OpcodeI64TruncsF64   Opcode = 0xb0
-	OpcodeI64TruncuF64   Opcode = 0xb1
-	OpcodeF32ConvertsI32 Opcode = 0xb2
-	OpcodeF32ConvertuI32 Opcode = 0xb3
-	OpcodeF32ConvertsI64 Opcode = 0xb4
-	OpcodeF32ConvertuI64 Opcode = 0xb5
+	OpcodeI32TruncF32s   Opcode = 0xa8
+	OpcodeI32TruncF32u   Opcode = 0xa9
+	OpcodeI32TruncF64s   Opcode = 0xaa
+	OpcodeI32TruncF64u   Opcode = 0xab
+	OpcodeI64ExtendI32s  Opcode = 0xac
+	OpcodeI64ExtendI32u  Opcode = 0xad
+	OpcodeI64TruncF32s   Opcode = 0xae
+	OpcodeI64TruncF32u   Opcode = 0xaf
+	OpcodeI64TruncF64s   Opcode = 0xb0
+	OpcodeI64TruncF64u   Opcode = 0xb1
+	OpcodeF32ConvertI32s Opcode = 0xb2
+	OpcodeF32ConvertI32u Opcode = 0xb3
+	OpcodeF32ConvertI64s Opcode = 0xb4
+	OpcodeF32ConvertI64u Opcode = 0xb5
 	OpcodeF32DemoteF64   Opcode = 0xb6
-	OpcodeF64ConvertsI32 Opcode = 0xb7
-	OpcodeF64ConvertuI32 Opcode = 0xb8
-	OpcodeF64ConvertsI64 Opcode = 0xb9
-	OpcodeF64ConvertuI64 Opcode = 0xba
+	OpcodeF64ConvertI32s Opcode = 0xb7
+	OpcodeF64ConvertI32u Opcode = 0xb8
+	OpcodeF64ConvertI64s Opcode = 0xb9
+	OpcodeF64ConvertI64u Opcode = 0xba
 	OpcodeF64PromoteF32  Opcode = 0xbb
 
 	// Reinterpretations

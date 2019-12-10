@@ -6,6 +6,8 @@ github.com/bearmini/sexp v0.0.0-20191206064629-6f9addaf3d19 h1:y/iXw89qkQtJ2zIgq
 github.com/bearmini/sexp v0.0.0-20191206064629-6f9addaf3d19/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
 github.com/bearmini/sexp v0.0.0-20191208134133-89424404ac18 h1:YxE5kSnhqFphGWXOHY4MAZ8U2T7zSJKgXtMz5OUzcPI=
 github.com/bearmini/sexp v0.0.0-20191208134133-89424404ac18/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
+github.com/bearmini/sexp v0.0.0-20191210055656-f9a27232adaa h1:bQiMfWswnGAx7L4CAa4EHD68X4xDS/GhJkKkg7Dfb3g=
+github.com/bearmini/sexp v0.0.0-20191210055656-f9a27232adaa/go.mod h1:LabkddWQoBcgpdF80OV/reaipcpgygQlpJpHdpeUayk=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/kylelemons/godebug v1.1.0 h1:RPNrshWIDI6G2gRW9EHilWtl7Z6Sb1BR0xunSBf0SNc=

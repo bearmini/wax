@@ -34,6 +34,6 @@ func (instr *InstrI32WrapI64) Perform(ctx context.Context, rt *Runtime) (*Label,
 func (instr *InstrI32WrapI64) Disassemble() (*disasmLineComponents, error) {
 	return &disasmLineComponents{
 		binary:   []byte{byte(instr.opcode)},
-		mnemonic: fmt.Sprintf("i32.wrap/i64"),
+		mnemonic: fmt.Sprintf("i32.wrap_i64"),
 	}, nil
 }
