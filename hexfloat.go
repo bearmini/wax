@@ -18,6 +18,11 @@ func ParseHexfloat32(s string) (float32, error) {
 
 func ParseHexfloat64(s string) (float64, error) {
 	s = strings.Trim(s, " \r\n\t")
+	sign := float64(1)
+	if strings.HasPrefix(s, "-") {
+		sign = -1
+		s = strings.TrimPrefix(s, "-")
+	}
 	if !strings.HasPrefix(s, "0x") && !strings.HasPrefix(s, "0X") {
 		return 0, errors.Errorf("invalid format: %s", s)
 	}
@@ -57,5 +62,5 @@ func ParseHexfloat64(s string) (float64, error) {
 		return 0, err
 	}
 
-	return (float64(hexnum) + fhexfrac) * math.Pow(2, float64(pow)), nil
+	return sign * (float64(hexnum) + fhexfrac) * math.Pow(2, float64(pow)), nil
 }

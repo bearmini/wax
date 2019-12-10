@@ -304,10 +304,10 @@ func (v *Val) String() string {
 		return fmt.Sprintf("i64:%#016x %d %d", x, uint64(x), int64(x))
 	case OpcodeF32Const:
 		x := v.MustGetF32()
-		return fmt.Sprintf("f32:%#08x %f", math.Float32bits(x), x)
+		return fmt.Sprintf("f32:%#08x %f %e", math.Float32bits(x), x, x)
 	case OpcodeF64Const:
 		x := v.MustGetF64()
-		return fmt.Sprintf("f64:%#016x %f", math.Float64bits(x), x)
+		return fmt.Sprintf("f64:%#016x %f %e", math.Float64bits(x), x, x)
 	default:
 		return "-"
 	}

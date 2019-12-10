@@ -3,6 +3,7 @@ package wax
 import (
 	"context"
 	"fmt"
+	"math"
 )
 
 type InstrF32CopySign struct {
@@ -21,12 +22,9 @@ func (instr *InstrF32CopySign) Opcode() Opcode {
 
 func (instr *InstrF32CopySign) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
 	return nil, binop(rt, ValTypeF32, func(v1, v2 *Val) (*Val, error) {
-		f1 := v1.MustGetF32()
-		f2 := v2.MustGetF32()
-		if (f1 >= 0 && f2 >= 0) || (f1 < 0 && f2 < 0) {
-			return v1, nil
-		}
-		return NewValF32(-f1), nil
+		f1 := float64(v1.MustGetF32())
+		f2 := float64(v2.MustGetF32())
+		return NewValF32(float32(math.Copysign(f1, f2))), nil
 	})
 }
 
