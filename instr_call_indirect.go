@@ -14,7 +14,7 @@ type InstrCallIndirect struct {
 }
 
 func ParseInstrCallIndirect(opcode Opcode, ber *BinaryEncodingReader) (*InstrCallIndirect, error) {
-	t64, tBytes, err := ber.ReadVaruintN(32)
+	t64, tBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

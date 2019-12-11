@@ -16,7 +16,7 @@ type InstrBrTable struct {
 }
 
 func ParseInstrBrTable(opcode Opcode, ber *BinaryEncodingReader) (*InstrBrTable, error) {
-	n, nBytes, err := ber.ReadVaruintN(32)
+	n, nBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func ParseInstrBrTable(opcode Opcode, ber *BinaryEncodingReader) (*InstrBrTable,
 	lsBytes := make([]byte, 0)
 
 	for i := uint64(0); i < n; i++ {
-		l64, lBytes, err := ber.ReadVaruintN(32)
+		l64, lBytes, err := ber.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}
@@ -34,7 +34,7 @@ func ParseInstrBrTable(opcode Opcode, ber *BinaryEncodingReader) (*InstrBrTable,
 		lsBytes = append(lsBytes, lBytes...)
 	}
 
-	ln64, lnBytes, err := ber.ReadVaruintN(32)
+	ln64, lnBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

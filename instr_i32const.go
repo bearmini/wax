@@ -20,7 +20,7 @@ func NewInstrI32Const(n uint32, nBytes []byte) *InstrI32Const {
 }
 
 func ParseInstrI32Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrI32Const, error) {
-	n64, nBytes, err := ber.ReadVarintN(32)
+	n64, nBytes, err := ber.ReadVarint()
 	if err != nil {
 		return nil, err
 	}

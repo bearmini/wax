@@ -111,11 +111,8 @@ func (ber *BinaryEncodingReader) ReadU64BE() (uint64, error) {
 	return binary.BigEndian.Uint64(b), nil
 }
 
-func (ber *BinaryEncodingReader) ReadVaruintN(n uint) (uint64, []byte, error) {
-	if n > 64 {
-		return 0, nil, errors.Errorf("%d is not supported", n)
-	}
-
+func (ber *BinaryEncodingReader) ReadVaruint() (uint64, []byte, error) {
+	const n = 64
 	var result uint64
 	var shift uint
 	consumedBytes := make([]byte, 0)
@@ -126,6 +123,10 @@ func (ber *BinaryEncodingReader) ReadVaruintN(n uint) (uint64, []byte, error) {
 			return 0, consumedBytes, err
 		}
 
+		if shift == 63 && b != 0 && b != 0x01 {
+			return 0, consumedBytes, errors.New("overflow")
+		}
+
 		consumedBytes = append(consumedBytes, b)
 		result |= (uint64(b&0x7f) << shift)
 		if b&0x80 == 0 {
@@ -133,9 +134,6 @@ func (ber *BinaryEncodingReader) ReadVaruintN(n uint) (uint64, []byte, error) {
 		}
 
 		shift += 7
-		if n <= shift {
-			return result, consumedBytes, nil
-		}
 	}
 }
 
@@ -143,40 +141,35 @@ func (ber *BinaryEncodingReader) ReadVaruintN(n uint) (uint64, []byte, error) {
 Signed integers are encoded in signed LEB128 format, which uses a two’s complement representation.
 As an additional constraint, the total number of bytes encoding a value of type sN must not exceed ceil(N/7) bytes.
 */
-func (ber *BinaryEncodingReader) ReadVarintN(n uint) (int64, []byte, error) {
-	if n > 64 {
-		return 0, nil, errors.Errorf("%d is not supported", n)
-	}
-
+func (ber *BinaryEncodingReader) ReadVarint() (int64, []byte, error) {
+	const n = 64
+	var err error
 	var result int64
 	var shift uint
+	var b byte
 	consumedBytes := make([]byte, 0)
 
 	for {
-		b, err := ber.ReadU8()
+		b, err = ber.ReadU8()
 		if err != nil {
 			return 0, consumedBytes, err
 		}
+		if shift == 63 && b != 0 && b != 0x7f {
+			return 0, consumedBytes, errors.New("overflow")
+		}
 
 		consumedBytes = append(consumedBytes, b)
-
-		largeN := n - shift
-		x := 1 << (largeN - 1) // 2^(N-1)
-
-		switch {
-		case b < 64 && int(b) < x:
-			return (int64(b) << shift) | result, consumedBytes, nil
-		case 64 <= b && b < 128 && int(b) >= (128-x):
-			return ((int64(b) - 128) << shift) | result, consumedBytes, nil
-		case 128 <= b && largeN > 7:
-			result |= ((int64(b) - 128) << shift)
-		default:
-			return 0, nil, errors.New("something wrong")
-		}
-
+		result |= int64(b&0x7f) << shift
 		shift += 7
-		if shift >= n {
-			return result, consumedBytes, nil
+
+		if b&0x80 == 0 {
+			break
 		}
 	}
+
+	if shift < n && (b&0x40) == 0x40 {
+		result |= -1 << shift
+	}
+
+	return result, consumedBytes, nil
 }

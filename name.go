@@ -16,7 +16,7 @@ type Name string
 
 func ParseName(ber *BinaryEncodingReader) (*Name, []byte, error) {
 	// Read NameLen
-	nameLen64, c, err := ber.ReadVaruintN(32)
+	nameLen64, c, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, nil, err
 	}

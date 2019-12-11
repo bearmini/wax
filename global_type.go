@@ -30,7 +30,7 @@ func ParseGlobalType(ber *BinaryEncodingReader) (*GlobalType, error) {
 	if err != nil {
 		return nil, err
 	}
-	m, _, err := ber.ReadVaruintN(1)
+	m, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

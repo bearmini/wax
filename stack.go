@@ -60,6 +60,36 @@ func (s *Stack) Top() *StackEntry {
 	return s.entries[len(s.entries)-1]
 }
 
+func (s *Stack) IsTopValue() bool {
+	top := s.Top()
+	if top == nil {
+		return false
+	}
+
+	if top.Value == nil {
+		return false
+	}
+
+	return true
+}
+
+func (s *Stack) AssertTopIsValueI32() error {
+	if !s.IsTopValue() {
+		return errors.New("stack top is not a value")
+	}
+
+	t, err := s.Top().Value.GetType()
+	if err != nil {
+		return err
+	}
+
+	if *t != ValTypeI32 {
+		return errors.New("stack top is not i32")
+	}
+
+	return nil
+}
+
 func (s *Stack) GetLabelAt(labelIdx LabelIdx) (*Label, error) {
 	n := 0
 	for i := len(s.entries) - 1; i >= 0; i-- {

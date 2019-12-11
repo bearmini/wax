@@ -70,7 +70,7 @@ func (vt ValType) BitCount() int {
 }
 
 func ParseValType(ber *BinaryEncodingReader) (*ValType, []byte, error) {
-	v, _, err := ber.ReadVaruintN(7)
+	v, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, nil, err
 	}

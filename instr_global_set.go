@@ -14,7 +14,7 @@ type InstrGlobalSet struct {
 }
 
 func ParseInstrGlobalSet(opcode Opcode, ber *BinaryEncodingReader) (*InstrGlobalSet, error) {
-	x64, xBytes, err := ber.ReadVaruintN(32)
+	x64, xBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

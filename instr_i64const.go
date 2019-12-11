@@ -20,14 +20,14 @@ func NewInstrI64Const(n uint64, nBytes []byte) *InstrI64Const {
 }
 
 func ParseInstrI64Const(opcode Opcode, ber *BinaryEncodingReader) (*InstrI64Const, error) {
-	n64, nBytes, err := ber.ReadVaruintN(64)
+	n64, nBytes, err := ber.ReadVarint()
 	if err != nil {
 		return nil, err
 	}
 
 	return &InstrI64Const{
 		opcode: opcode,
-		N:      n64,
+		N:      uint64(n64),
 		NBytes: nBytes,
 	}, nil
 }

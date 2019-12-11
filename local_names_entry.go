@@ -6,7 +6,7 @@ type LocalNamesEntry struct {
 }
 
 func ParseLocalNamesEntry(ber *BinaryEncodingReader) (*LocalNamesEntry, error) {
-	idx64, _, err := ber.ReadVaruintN(32)
+	idx64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

@@ -22,7 +22,7 @@ func NewInstrBr(labelIdx LabelIdx, labelIdxBytes []byte) *InstrBr {
 }
 
 func ParseInstrBr(opcode Opcode, ber *BinaryEncodingReader) (*InstrBr, error) {
-	l64, lBytes, err := ber.ReadVaruintN(32)
+	l64, lBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

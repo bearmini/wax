@@ -10,7 +10,7 @@ func (ln *LocalNames) GetNameType() NameType {
 }
 
 func ParseLocalNames(ber *BinaryEncodingReader) (*LocalNames, error) {
-	count64, _, err := ber.ReadVaruintN(32)
+	count64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

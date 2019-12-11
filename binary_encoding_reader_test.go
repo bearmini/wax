@@ -13,49 +13,42 @@ func TestBinaryEncodingReaderVarintN(t *testing.T) {
 		Name     string
 		Bytes    []byte
 		Consumed []byte
-		N        uint
 		Expected int64
 	}{
 		{
 			Name:     "pattern 1",
 			Bytes:    []byte{0x01},
 			Consumed: []byte{0x01},
-			N:        4,
 			Expected: 1,
 		},
 		{
 			Name:     "pattern 2",
 			Bytes:    []byte{0x7F},
 			Consumed: []byte{0x7F},
-			N:        7,
 			Expected: -1,
 		},
 		{
 			Name:     "pattern 3",
 			Bytes:    []byte{0xFE, 0x7F},
 			Consumed: []byte{0xFE, 0x7F},
-			N:        16,
 			Expected: -2,
 		},
 		{
 			Name:     "pattern 4",
 			Bytes:    []byte{0xFE, 0xFF, 0x7F},
 			Consumed: []byte{0xFE, 0xFF, 0x7F},
-			N:        16,
 			Expected: -2,
 		},
 		{
 			Name:     "pattern 5",
 			Bytes:    []byte{0x9B, 0xF1, 0x59},
 			Consumed: []byte{0x9B, 0xF1, 0x59},
-			N:        21,
 			Expected: -624485,
 		},
 		{
 			Name:     "pattern 6",
 			Bytes:    []byte{0x80, 0x88, 0x80, 0x80, 0x00},
 			Consumed: []byte{0x80, 0x88, 0x80, 0x80, 0x00},
-			N:        32,
 			Expected: 0x400,
 		},
 	}
@@ -66,7 +59,7 @@ func TestBinaryEncodingReaderVarintN(t *testing.T) {
 			//t.Parallel()
 
 			ber := wax.NewBinaryEncodingReader(bytes.NewReader(data.Bytes))
-			v, consumed, err := ber.ReadVarintN(data.N)
+			v, consumed, err := ber.ReadVarint()
 			if err != nil {
 				t.Fatalf("unexpected error: %+v", err)
 			}

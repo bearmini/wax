@@ -20,18 +20,18 @@ func (nm *NameMap) FindByName(name string) *Naming {
 }
 
 func ParseNameMap(ber *BinaryEncodingReader) (*NameMap, error) {
-	count64, _, err := ber.ReadVaruintN(32)
+	count64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
 
 	namings := make([]*Naming, 0, count64)
 	for i := uint64(0); i < count64; i++ {
-		idx64, _, err := ber.ReadVaruintN(32)
+		idx64, _, err := ber.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}
-		nameLen64, _, err := ber.ReadVaruintN(32)
+		nameLen64, _, err := ber.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}

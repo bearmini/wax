@@ -22,7 +22,7 @@ func ParseFuncType(ber *BinaryEncodingReader) (*FuncType, error) {
 		return nil, errors.Errorf("unexpected fixed value: %#02x", fixed)
 	}
 
-	pc64, _, err := ber.ReadVaruintN(32)
+	pc64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func ParseFuncType(ber *BinaryEncodingReader) (*FuncType, error) {
 		}
 	}
 
-	rc64, _, err := ber.ReadVaruintN(32)
+	rc64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

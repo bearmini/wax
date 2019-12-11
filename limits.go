@@ -21,7 +21,7 @@ func ParseLimits(ber *BinaryEncodingReader) (*Limits, error) {
 		return nil, err
 	}
 
-	n64, _, err := ber.ReadVaruintN(32)
+	n64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func ParseLimits(ber *BinaryEncodingReader) (*Limits, error) {
 		}, nil
 
 	case 0x01:
-		m64, _, err := ber.ReadVaruintN(32)
+		m64, _, err := ber.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}

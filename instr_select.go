@@ -2,8 +2,6 @@ package wax
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
 )
 
 type InstrSelect struct {
@@ -27,34 +25,52 @@ func (instr *InstrSelect) Opcode() Opcode {
 }
 
 func (instr *InstrSelect) Perform(ctx context.Context, rt *Runtime) (*Label, error) {
-	v1, err := rt.Stack.PopValue()
+	// 1. Assert: due to validation, a value of value type i32 is on the top of the stack.
+	err := rt.Stack.AssertTopIsValueI32()
 	if err != nil {
 		return nil, err
 	}
 
+	// 2. Pop the value i32.const 𝑐 from the stack.
+	c, err := rt.Stack.PopValue()
+	if err != nil {
+		return nil, err
+	}
+
+	// 3. Assert: due to validation, two more values (of the same value type) are on the top of the stack.
+	err = rt.Stack.AssertTopIsValueI32()
+	if err != nil {
+		return nil, err
+	}
+
+	// 4. Pop the value val 2 from the stack.
 	v2, err := rt.Stack.PopValue()
 	if err != nil {
 		return nil, err
 	}
 
-	v3, err := rt.Stack.PopValue()
+	err = rt.Stack.AssertTopIsValueI32()
 	if err != nil {
 		return nil, err
 	}
 
-	t3, err := v3.GetType()
-	switch *t3 {
-	case ValTypeI32:
-		if v3.MustGetI32() == 0 {
-			rt.Stack.PushValue(v1)
-		} else {
-			rt.Stack.PushValue(v2)
-		}
-	default:
-		return nil, errors.New("not implemented")
+	// 5. Pop the value val 1 from the stack.
+	v1, err := rt.Stack.PopValue()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	// 6. If c is not 0, then:
+	if c.MustGetI32() != 0 {
+		// (a) Push the value val 1 back to the stack.
+		err = rt.Stack.PushValue(v1)
+	} else {
+		// 7. Else:
+		// (a) Push the value val 2 back to the stack.
+		err = rt.Stack.PushValue(v2)
+	}
+
+	return nil, err
 }
 
 func (instr *InstrSelect) Disassemble() (*disasmLineComponents, error) {

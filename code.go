@@ -21,7 +21,7 @@ type Code struct {
 
 func ParseCode(ber *BinaryEncodingReader) (*Code, error) {
 	// Read size
-	size64, _, err := ber.ReadVaruintN(32)
+	size64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ type locals struct {
 
 func parseLocals(ber *BinaryEncodingReader) ([]locals, error) {
 	// Read size of vector
-	size64, _, err := ber.ReadVaruintN(32)
+	size64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func parseLocals(ber *BinaryEncodingReader) ([]locals, error) {
 	result := make([]locals, 0, size)
 	for i := uint32(0); i < size; i++ {
 		// Read n
-		n64, _, err := ber.ReadVaruintN(32)
+		n64, _, err := ber.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}

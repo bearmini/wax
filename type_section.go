@@ -29,7 +29,7 @@ func ParseTypeSection(ber *BinaryEncodingReader, id SectionID) (*TypeSection, er
 	cr := NewBinaryEncodingReader(bytes.NewReader(sb.Content))
 
 	// Read Count
-	count64, _, err := cr.ReadVaruintN(32)
+	count64, _, err := cr.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

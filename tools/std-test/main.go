@@ -115,24 +115,32 @@ func processSexp(s *sexp.Sexp) error {
 		}
 		currentModule = m
 	case "assert_return":
-		if len(s.Children) < 3 {
+		if len(s.Children) < 2 {
 			return errors.Errorf("insufficient arguments: %s", s.String())
 		}
 		invoke := s.Children[1]
-		expected := s.Children[2]
-		ev, err := evalConst(expected)
-		if err != nil {
-			return err
+
+		var expectedVal *wax.Val
+		if len(s.Children) > 2 {
+			expected := s.Children[2]
+			ev, err := evalConst(expected)
+			if err != nil {
+				return err
+			}
+			expectedVal = ev
 		}
+
 		actual, err := eval(invoke)
 		if err != nil {
 			return err
 		}
-		if len(actual) != 1 {
-			return errors.Errorf("expected 1 return value, but got %d\n%+v\n", len(actual), actual)
-		}
-		if !ev.EqualsTo(actual[0]) {
-			return errors.Errorf("assertion failed: %s\nExpected: %+v\nActual:   %+v\n", s.String(), ev, actual[0])
+		if expectedVal != nil {
+			if len(actual) != 1 {
+				return errors.Errorf("expected 1 return value, but got %d\n%+v\n", len(actual), actual)
+			}
+			if !expectedVal.EqualsTo(actual[0]) {
+				return errors.Errorf("assertion failed: %s\nExpected: %+v\nActual:   %+v\n", s.String(), expectedVal, actual[0])
+			}
 		}
 	case "assert_trap":
 		fmt.Printf("skipping assert_trap\n")
@@ -144,6 +152,8 @@ func processSexp(s *sexp.Sexp) error {
 		fmt.Printf("skipping assert_return_canonical_nan\n")
 	case "assert_return_arithmetic_nan":
 		fmt.Printf("skipping assert_return_arithmetic_nan\n")
+	case "assert_exhaustion":
+		fmt.Printf("skipping assert_exhaustion\n")
 	default:
 		return errors.Errorf("not implemented: first atom value: %s", first.Atom.Value)
 	}

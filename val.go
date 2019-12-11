@@ -139,7 +139,7 @@ func (v *Val) GetI32() (uint32, error) {
 		return 0, errors.New("type mismatch")
 	}
 
-	val, _, err := ber.ReadVaruintN(32)
+	val, _, err := ber.ReadVaruint()
 	if err != nil {
 		return 0, err
 	}
@@ -157,7 +157,7 @@ func (v *Val) GetI64() (uint64, error) {
 		return 0, errors.New("type mismatch")
 	}
 
-	val, _, err := ber.ReadVaruintN(64)
+	val, _, err := ber.ReadVaruint()
 	if err != nil {
 		return 0, err
 	}

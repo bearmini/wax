@@ -22,7 +22,7 @@ func NewInstrCall(funcIdx FuncIdx, funcIdxBytes []byte) *InstrCall {
 }
 
 func ParseInstrCall(opcode Opcode, ber *BinaryEncodingReader) (*InstrCall, error) {
-	f64, fBytes, err := ber.ReadVaruintN(32)
+	f64, fBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ type LocalEntry struct {
 
 func ParseLocalEntry(ber *BinaryEncodingReader) (*LocalEntry, []byte, error) {
 	consumedBytes := []byte{}
-	count64, c, err := ber.ReadVaruintN(32)
+	count64, c, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, nil, err
 	}

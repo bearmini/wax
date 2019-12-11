@@ -6,11 +6,11 @@ type MemArg struct {
 }
 
 func ParseMemArg(ber *BinaryEncodingReader) (*MemArg, []byte, error) {
-	a64, ca, err := ber.ReadVaruintN(32)
+	a64, ca, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, nil, err
 	}
-	o64, co, err := ber.ReadVaruintN(32)
+	o64, co, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, nil, err
 	}

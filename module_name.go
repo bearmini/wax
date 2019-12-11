@@ -14,7 +14,7 @@ func (mn *ModuleName) GetNameType() NameType {
 }
 
 func ParseModuleName(ber *BinaryEncodingReader) (*ModuleName, error) {
-	l, _, err := ber.ReadVaruintN(32)
+	l, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

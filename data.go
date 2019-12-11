@@ -27,7 +27,7 @@ func ParseData(ber *BinaryEncodingReader) (*Data, error) {
 	}
 
 	// Read the size of Value
-	size64, _, err := ber.ReadVaruintN(32)
+	size64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

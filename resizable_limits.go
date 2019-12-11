@@ -18,19 +18,19 @@ type ResizableLimits struct {
 }
 
 func ParseResizableLimits(ber *BinaryEncodingReader) (*ResizableLimits, error) {
-	f, _, err := ber.ReadVaruintN(1)
+	f, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
 
-	i, _, err := ber.ReadVaruintN(32)
+	i, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
 
 	var m uint32
 	if f == 1 {
-		m64, _, err := ber.ReadVaruintN(32)
+		m64, _, err := ber.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}

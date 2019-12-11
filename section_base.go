@@ -37,7 +37,7 @@ func (s SectionBase) Encode(bew *BinaryEncodingWriter) error {
 }
 
 func ParseSectionBase(ber *BinaryEncodingReader, id SectionID) (*SectionBase, error) {
-	size64, _, err := ber.ReadVaruintN(32)
+	size64, _, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}

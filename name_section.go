@@ -39,7 +39,7 @@ func ParseNameSection(cs *CustomSection) (*NameSection, error) {
 	subsections := make([]NameSubsection, 0)
 
 	for {
-		nt64, _, err := cr.ReadVaruintN(7)
+		nt64, _, err := cr.ReadVaruint()
 		if err == io.EOF {
 			break
 		}
@@ -49,7 +49,7 @@ func ParseNameSection(cs *CustomSection) (*NameSection, error) {
 
 		nt := NameType(nt64)
 
-		npLen64, _, err := cr.ReadVaruintN(32)
+		npLen64, _, err := cr.ReadVaruint()
 		if err != nil {
 			return nil, err
 		}

@@ -42,21 +42,21 @@ func ParseInitExpr(ber *BinaryEncodingReader) ([]byte, error) {
 
 		switch t {
 		case "varuint32":
-			_, c, err := ber.ReadVaruintN(32)
+			_, c, err := ber.ReadVaruint()
 			if err != nil {
 				return nil, err
 			}
 			ie = append(ie, c...)
 
 		case "varint32":
-			_, c, err := ber.ReadVarintN(32)
+			_, c, err := ber.ReadVarint()
 			if err != nil {
 				return nil, err
 			}
 			ie = append(ie, c...)
 
 		case "varint64":
-			_, c, err := ber.ReadVarintN(64)
+			_, c, err := ber.ReadVarint()
 			if err != nil {
 				return nil, err
 			}

@@ -22,7 +22,7 @@ func NewInstrLocalSet(localIdx LocalIdx, localIdxBytes []byte) *InstrLocalGet {
 }
 
 func ParseInstrLocalSet(opcode Opcode, ber *BinaryEncodingReader) (*InstrLocalSet, error) {
-	x64, xBytes, err := ber.ReadVaruintN(32)
+	x64, xBytes, err := ber.ReadVaruint()
 	if err != nil {
 		return nil, err
 	}
