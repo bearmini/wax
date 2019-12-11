@@ -5,7 +5,7 @@ set -e
 
 export GO111MODULE=on
 USE_DOCKER_TINYGO=0
-TINYGO_VERSION=0.8.0
+TINYGO_VERSION=0.10.0
 
 tinygo_available() {
   command -v tinygo > /dev/null 2>&1 && {
@@ -150,23 +150,23 @@ std_test_wast_dir="$d/vendor/WebAssembly/spec/test/core"
 #"$std_test_bin" -i "$std_test_wast_dir/memory_size.wast"            -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/names.wast"                  -w "$wasm_bin"
 #"$std_test_bin" -i "$std_test_wast_dir/nop.wast"                    -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/return.wast"                 -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/return.wast"                 -w "$wasm_bin"
 #"$std_test_bin" -i "$std_test_wast_dir/select.wast"                 -w "$wasm_bin"
 #"$std_test_bin" -i "$std_test_wast_dir/skip-stack-guard-page.wast"  -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/stack.wast"                  -w "$wasm_bin"
 #"$std_test_bin" -i "$std_test_wast_dir/start.wast"                  -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/store.wast"                  -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/switch.wast"                 -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/store.wast"                  -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/switch.wast"                 -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/token.wast"                  -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/traps.wast"                  -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/traps.wast"                  -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/type.wast"                   -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/unreachable.wast"            -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/unreachable.wast"            -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/unreached-invalid.wast"      -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/unwind.wast"                 -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/unwind.wast"                 -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/utf8-custom-section-id.wast" -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/utf8-import-field.wast"      -w "$wasm_bin"
 "$std_test_bin" -i "$std_test_wast_dir/utf8-import-module.wast"     -w "$wasm_bin"
-#"$std_test_bin" -i "$std_test_wast_dir/utf8-invalid-encoding.wast"  -w "$wasm_bin"
+"$std_test_bin" -i "$std_test_wast_dir/utf8-invalid-encoding.wast"  -w "$wasm_bin"
 
 if tinygo_available; then
   build_with_tinygo "$d/examples/go/add" main.go

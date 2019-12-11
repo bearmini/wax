@@ -1,17 +1,20 @@
 package wax
 
 /*
-Table Types
-https://webassembly.github.io/multi-value/core/binary/types.html#table-types
+2.3.6 Table Types
+Table types classify tables over elements of element types within a size range.
 
+tabletype ::= limits elemtype
+elemtype ::= funcref
+
+5.3.6 Table Types
 Table types are encoded with their limits and a constant byte indicating their element type.
-
-	tabletype ::= et:elemtype lim:limits => lim et
-	elemtype  ::= 0x70                   => anyfunc
+tabletype ::= et:elemtype lim:limits ⇒ lim et
+elemtype ::= 0x70 ⇒ funcref
 */
 type TableType struct {
-	ElementType ElemType
 	Limits      Limits
+	ElementType ElemType
 }
 
 func ParseTableType(ber *BinaryEncodingReader) (*TableType, error) {
@@ -26,7 +29,7 @@ func ParseTableType(ber *BinaryEncodingReader) (*TableType, error) {
 	}
 
 	return &TableType{
-		ElementType: *et,
 		Limits:      *l,
+		ElementType: *et,
 	}, nil
 }

@@ -33,6 +33,14 @@ func (s *Store) GetFirstFreeFuncAddr() FuncAddr {
 	return FuncAddr(len(s.Funcs))
 }
 
+func (s *Store) GetFirstFreeTableAddr() TableAddr {
+	return TableAddr(len(s.Tables))
+}
+
 func (s *Store) GetFirstFreeMemAddr() MemAddr {
 	return MemAddr(len(s.Mems))
+}
+
+func (s *Store) GetFirstFreeGlobalAddr() GlobalAddr {
+	return GlobalAddr(len(s.Globals))
 }

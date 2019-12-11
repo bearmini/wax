@@ -60,6 +60,19 @@ func (s *Stack) Top() *StackEntry {
 	return s.entries[len(s.entries)-1]
 }
 
+func (s *Stack) IsTopFrame() bool {
+	top := s.Top()
+	if top == nil {
+		return false
+	}
+
+	if top.Frame == nil {
+		return false
+	}
+
+	return true
+}
+
 func (s *Stack) IsTopValue() bool {
 	top := s.Top()
 	if top == nil {

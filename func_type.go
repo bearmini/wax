@@ -61,3 +61,27 @@ func ParseFuncType(ber *BinaryEncodingReader) (*FuncType, error) {
 		ReturnTypes: rt,
 	}, nil
 }
+
+func (ft FuncType) EqualsTo(ft2 FuncType) bool {
+	if len(ft.ParamTypes) != len(ft2.ParamTypes) {
+		return false
+	}
+
+	if len(ft.ReturnTypes) != len(ft2.ReturnTypes) {
+		return false
+	}
+
+	for i, pt := range ft.ParamTypes {
+		if pt != ft2.ParamTypes[i] {
+			return false
+		}
+	}
+
+	for i, rt := range ft.ReturnTypes {
+		if rt != ft2.ReturnTypes[i] {
+			return false
+		}
+	}
+
+	return true
+}

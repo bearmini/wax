@@ -444,3 +444,29 @@ func checkDeadline(ctx context.Context) error {
 		return nil
 	}
 }
+
+func (rt *Runtime) evaluateInitializerExpression(initExpr Expr) (*Val, error) {
+	if len(initExpr) != 2 {
+		return nil, errors.New("unsupported init expression")
+	}
+
+	if initExpr[1].Opcode() != OpcodeEnd {
+		return nil, errors.New("unsupported init expression")
+	}
+
+	switch initExpr[0].Opcode() {
+	case OpcodeI32Const, OpcodeI64Const, OpcodeF32Const, OpcodeF64Const:
+		_, err := initExpr[0].Perform(context.Background(), rt)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, errors.New("unsupported init expression")
+	}
+
+	if !rt.Stack.IsTopValue() {
+		return nil, errors.New("unsupported init expression")
+	}
+
+	return rt.Stack.PopValue()
+}

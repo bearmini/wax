@@ -5,20 +5,20 @@ package wax
 */
 type Global struct {
 	Type GlobalType
-	Init InitExpr
+	Init Expr
 }
 
 func ParseGlobal(ber *BinaryEncodingReader) (*Global, error) {
-	t, err := ParseGlobalType(ber)
+	gt, err := ParseGlobalType(ber)
 	if err != nil {
 		return nil, err
 	}
-	i, err := ParseInitExpr(ber)
+	e, err := ParseExpr(ber)
 	if err != nil {
 		return nil, err
 	}
 	return &Global{
-		Type: *t,
-		Init: i,
+		Type: *gt,
+		Init: *e,
 	}, nil
 }

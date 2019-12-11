@@ -154,6 +154,8 @@ func processSexp(s *sexp.Sexp) error {
 		fmt.Printf("skipping assert_return_arithmetic_nan\n")
 	case "assert_exhaustion":
 		fmt.Printf("skipping assert_exhaustion\n")
+	case "assert_unlinkable":
+		fmt.Printf("skipping assert_unlinkable\n")
 	default:
 		return errors.Errorf("not implemented: first atom value: %s", first.Atom.Value)
 	}

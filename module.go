@@ -226,7 +226,13 @@ func (m *Module) GetImports() []*Import {
 
 func (m *Module) GetFuncs() []Func {
 	fs := m.GetFunctionSection()
+	if fs == nil {
+		return []Func{}
+	}
 	cs := m.GetCodeSection()
+	if cs == nil {
+		return []Func{}
+	}
 
 	result := make([]Func, 0, len(cs.Code))
 	for i, c := range cs.Code {
@@ -238,6 +244,20 @@ func (m *Module) GetFuncs() []Func {
 	}
 
 	return result
+}
+
+func (m *Module) GetTables() []TableType {
+	ts := m.GetTableSection()
+	if ts == nil {
+		return []TableType{}
+	}
+
+	result := make([]TableType, 0, len(ts.TableTypes))
+	for _, t := range ts.TableTypes {
+		result = append(result, *t)
+	}
+	return result
+
 }
 
 func (m *Module) GetExportedFuncName(fa FuncAddr) Name {
@@ -259,12 +279,30 @@ func (m *Module) GetExportedFuncName(fa FuncAddr) Name {
 	return Name("(unknown)")
 }
 
-func (m *Module) GetMems() []*MemType {
+func (m *Module) GetMems() []MemType {
 	ms := m.GetMemorySection()
 	if ms == nil {
-		return []*MemType{}
+		return []MemType{}
 	}
-	return ms.MemTypes
+
+	result := make([]MemType, 0, len(ms.MemTypes))
+	for _, m := range ms.MemTypes {
+		result = append(result, *m)
+	}
+	return result
+}
+
+func (m *Module) GetGlobals() []Global {
+	gs := m.GetGlobalSection()
+	if gs == nil {
+		return []Global{}
+	}
+
+	result := make([]Global, 0, len(gs.Globals))
+	for _, g := range gs.Globals {
+		result = append(result, *g)
+	}
+	return result
 }
 
 func (m *Module) ToJSON() string {
