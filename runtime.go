@@ -162,8 +162,8 @@ func (rt *Runtime) InvokeFunc(ctx context.Context, fa FuncAddr, val []*Val) ([]*
 	}
 
 	// 6. Push the values val* to the stack.
-	for i := len(val) - 1; i >= 0; i-- {
-		err := rt.Stack.PushValue(val[i])
+	for _, v := range val {
+		err := rt.Stack.PushValue(v)
 		if err != nil {
 			return nil, err
 		}

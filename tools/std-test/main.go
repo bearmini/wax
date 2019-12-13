@@ -205,7 +205,6 @@ func eval(s *sexp.Sexp) ([]*wax.Val, error) {
 			}
 			args = append(args, v)
 		}
-		reverse(args)
 		ctx := context.Background()
 		return currentRuntime.InvokeFunc(ctx, *fa, args)
 	default:
