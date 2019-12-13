@@ -85,7 +85,7 @@ func disasmFuncAddr(m *wax.Module, fa uint32) error {
 }
 
 func disasmFuncName(m *wax.Module, fn string) error {
-	rt, err := wax.NewRuntime(m)
+	rt, err := wax.NewRuntime(m, wax.NewRuntimeConfig())
 	if err != nil {
 		return err
 	}

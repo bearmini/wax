@@ -7,6 +7,7 @@ import (
 )
 
 type Runtime struct {
+	cfg            *RuntimeConfig
 	ip             uint32 // instruction pointer
 	Store          *Store
 	Stack          *Stack
@@ -14,7 +15,7 @@ type Runtime struct {
 	ModuleInstance *ModuleInstance
 }
 
-func NewRuntime(m *Module) (*Runtime, error) {
+func NewRuntime(m *Module, cfg *RuntimeConfig) (*Runtime, error) {
 	//s := NewStore(m)
 	s := NewEmptyStore()
 	e, err := createExternValsForImportSection(m)
@@ -28,6 +29,7 @@ func NewRuntime(m *Module) (*Runtime, error) {
 	}
 
 	return &Runtime{
+		cfg:            cfg,
 		Store:          s,
 		Stack:          NewStack(),
 		Module:         m,

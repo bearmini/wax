@@ -1,5 +1,9 @@
 package wax
 
+import (
+	"github.com/pkg/errors"
+)
+
 /*
 Store
 
@@ -43,4 +47,20 @@ func (s *Store) GetFirstFreeMemAddr() MemAddr {
 
 func (s *Store) GetFirstFreeGlobalAddr() GlobalAddr {
 	return GlobalAddr(len(s.Globals))
+}
+
+func (s *Store) AssertMemInstExists(a MemAddr) error {
+	if uint32(len(s.Mems)) <= uint32(a) {
+		return errors.New("invalid memaddr")
+	}
+
+	return nil
+}
+
+func (s *Store) AssertGlobalInstExists(a GlobalAddr) error {
+	if uint32(len(s.Globals)) <= uint32(a) {
+		return errors.New("invalid globaladdr")
+	}
+
+	return nil
 }

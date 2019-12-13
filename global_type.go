@@ -1,28 +1,23 @@
 package wax
 
 /*
-/*
-Global Types
-https://webassembly.github.io/multi-value/core/syntax/types.html#syntax-mut
-
+2.3.7 Global Types
 Global types classify global variables, which hold a value and can either be mutable or immutable.
 
 globaltype ::= mut valtype
-mut        ::= const | var
+mut ::= const | var
 
 
-Global Types
-http://webassembly.github.io/spec/core/binary/types.html
-
+5.3.7 Global Types
 Global types are encoded by their value type and a flag for their mutability.
 
-globaltype ::= r:valtype m:mut => m t
-mut        ::= 0x00 => const
-             | 0x01 => va
+globaltype ::= t:valtype m:mut ⇒ m t
+mut ::= 0x00 ⇒ const
+      | 0x01 ⇒ var
 */
 type GlobalType struct {
-	R ValType
-	M Mut
+	Mut     Mut
+	ValType ValType
 }
 
 func ParseGlobalType(ber *BinaryEncodingReader) (*GlobalType, error) {
@@ -36,7 +31,7 @@ func ParseGlobalType(ber *BinaryEncodingReader) (*GlobalType, error) {
 	}
 
 	return &GlobalType{
-		R: *vt,
-		M: Mut(m),
+		Mut:     Mut(m),
+		ValType: *vt,
 	}, nil
 }

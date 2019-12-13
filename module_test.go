@@ -140,8 +140,8 @@ func TestParseModule(t *testing.T) {
 						Globals: []*Global{
 							&Global{
 								Type: GlobalType{
-									R: ValTypeI32,
-									M: 0x01,
+									Mut:     0x01,
+									ValType: ValTypeI32,
 								},
 								Init: Expr{
 									NewInstrI32Const(1048576, []byte{0x80, 0x80, 0xc0, 0x00}),
@@ -150,8 +150,8 @@ func TestParseModule(t *testing.T) {
 							},
 							&Global{
 								Type: GlobalType{
-									R: ValTypeI32,
-									M: 0x00,
+									Mut:     0x00,
+									ValType: ValTypeI32,
 								},
 								Init: Expr{
 									NewInstrI32Const(1048576, []byte{0x80, 0x80, 0xc0, 0x00}),
@@ -160,8 +160,8 @@ func TestParseModule(t *testing.T) {
 							},
 							&Global{
 								Type: GlobalType{
-									R: ValTypeI32,
-									M: 0x00,
+									Mut:     0x00,
+									ValType: ValTypeI32,
 								},
 								Init: Expr{
 									NewInstrI32Const(1048576, []byte{0x80, 0x80, 0xc0, 0x00}),
@@ -534,8 +534,8 @@ func TestParseModule(t *testing.T) {
 						Globals: []*Global{
 							&Global{
 								Type: GlobalType{
-									R: ValType(0x7f),
-									M: 0x01,
+									Mut:     0x01,
+									ValType: ValType(0x7f),
 								},
 								Init: Expr{
 									NewInstrI32Const(66560, []byte{0x80, 0x88, 0x04}),
@@ -544,8 +544,8 @@ func TestParseModule(t *testing.T) {
 							},
 							&Global{
 								Type: GlobalType{
-									R: ValType(0x7f),
-									M: 0x00,
+									Mut:     0x00,
+									ValType: ValType(0x7f),
 								},
 								Init: Expr{
 									NewInstrI32Const(66560, []byte{0x80, 0x88, 0x04}),
@@ -554,8 +554,8 @@ func TestParseModule(t *testing.T) {
 							},
 							&Global{
 								Type: GlobalType{
-									R: ValType(0x7f),
-									M: 0x00,
+									Mut:     0x00,
+									ValType: ValType(0x7f),
 								},
 								Init: Expr{
 									NewInstrI32Const(1024, []byte{0x80, 0x08}),
@@ -1150,8 +1150,8 @@ func TestParseModule(t *testing.T) {
 						Globals: []*Global{
 							&Global{
 								Type: GlobalType{
-									R: ValType(0x7f),
-									M: 0x01,
+									Mut:     0x01,
+									ValType: ValType(0x7f),
 								},
 								Init: Expr{
 									NewInstrI32Const(66576, []byte{0x90, 0x88, 0x04}),
@@ -1160,8 +1160,8 @@ func TestParseModule(t *testing.T) {
 							},
 							&Global{
 								Type: GlobalType{
-									R: ValType(0x7f),
-									M: 0x00,
+									Mut:     0x00,
+									ValType: ValType(0x7f),
 								},
 								Init: Expr{
 									NewInstrI32Const(66576, []byte{0x90, 0x88, 0x04}),
@@ -1170,8 +1170,8 @@ func TestParseModule(t *testing.T) {
 							},
 							&Global{
 								Type: GlobalType{
-									R: ValType(0x7f),
-									M: 0x00,
+									Mut:     0x00,
+									ValType: ValType(0x7f),
 								},
 								Init: Expr{
 									NewInstrI32Const(1028, []byte{0x84, 0x08}),

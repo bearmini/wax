@@ -86,6 +86,13 @@ func (s *Stack) IsTopValue() bool {
 	return true
 }
 
+func (s *Stack) AssertTopIsValue() error {
+	if !s.IsTopValue() {
+		return errors.New("stack top is not a value")
+	}
+	return nil
+}
+
 func (s *Stack) AssertTopIsValueI32() error {
 	if !s.IsTopValue() {
 		return errors.New("stack top is not a value")

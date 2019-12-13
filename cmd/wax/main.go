@@ -66,7 +66,7 @@ func execute(fname string) error {
 		return err
 	}
 
-	rt, err := wax.NewRuntime(m)
+	rt, err := wax.NewRuntime(m, wax.NewRuntimeConfig())
 	if err != nil {
 		return err
 	}

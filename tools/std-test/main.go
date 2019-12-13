@@ -27,7 +27,8 @@ var opts struct {
 }
 
 var (
-	currentModule *wax.Module
+	currentModule  *wax.Module
+	currentRuntime *wax.Runtime
 )
 
 func main() {
@@ -109,12 +110,19 @@ func processSexp(s *sexp.Sexp) error {
 
 	switch first.Atom.Value {
 	case "module":
+		fmt.Printf("compiling module\n")
 		m, err := compile(s.String())
 		if err != nil {
 			return err
 		}
 		currentModule = m
+		rt, err := wax.NewRuntime(currentModule, wax.NewRuntimeConfig().MaxMemorySizeInPage(1024))
+		if err != nil {
+			return err
+		}
+		currentRuntime = rt
 	case "assert_return":
+		fmt.Printf("-> %s\n", s.String())
 		if len(s.Children) < 2 {
 			return errors.Errorf("insufficient arguments: %s", s.String())
 		}
@@ -184,11 +192,7 @@ func eval(s *sexp.Sexp) ([]*wax.Val, error) {
 		}
 		fname := strings.Trim(second.Atom.Value, `"`)
 
-		rt, err := wax.NewRuntime(currentModule)
-		if err != nil {
-			return nil, err
-		}
-		fa, err := rt.FindFuncAddr(fname)
+		fa, err := currentRuntime.FindFuncAddr(fname)
 		if err != nil {
 			return nil, err
 		}
@@ -203,7 +207,7 @@ func eval(s *sexp.Sexp) ([]*wax.Val, error) {
 		}
 		reverse(args)
 		ctx := context.Background()
-		return rt.InvokeFunc(ctx, *fa, args)
+		return currentRuntime.InvokeFunc(ctx, *fa, args)
 	default:
 		return nil, errors.New("not implemented")
 	}

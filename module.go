@@ -215,6 +215,15 @@ func (m *Module) FindCustomSectionWithName(name string) *CustomSection {
 	return nil
 }
 
+func (m *Module) GetFuncTypes() []FuncType {
+	ts := m.GetTypeSection()
+	ft := []FuncType{}
+	if ts != nil {
+		ft = ts.FuncTypes
+	}
+	return ft
+}
+
 func (m *Module) GetImports() []*Import {
 	is := m.GetImportSection()
 	if is == nil {

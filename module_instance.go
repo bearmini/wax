@@ -294,9 +294,8 @@ vector of the module, and a list of initialization values for the module's globa
 */
 func allocModuleInstance(m *Module, s *Store, evs []ExternVal, vals []Val) (*ModuleInstance, error) {
 	// 1. Let module be the module to allocate and externval^*_im the vector of external values providing the module's imports, and val* the initialization values of the module's globals.
-
 	mi := &ModuleInstance{
-		Types: m.GetTypeSection().FuncTypes, // We need this before allocating funcs
+		Types: m.GetFuncTypes(), // We need this before allocating funcs
 	}
 
 	// 2. For each function func_i in module.funcs, do:
@@ -544,7 +543,7 @@ func allocGlobal(s *Store, gt GlobalType, val Val) (GlobalAddr, error) {
 	// 4. Let globalinst be the global instance {value val, mut mut}.
 	gi := GlobalInst{
 		Value: val,
-		Mut:   gt.M,
+		Mut:   gt.Mut,
 	}
 
 	// 5. Append globalinst to the globals of S.
@@ -555,5 +554,21 @@ func allocGlobal(s *Store, gt GlobalType, val Val) (GlobalAddr, error) {
 }
 
 func zeroedMem(n uint32) []byte {
-	return make([]byte, n*64*1024)
+	return make([]byte, n*PageSize)
+}
+
+func (mi *ModuleInstance) AssertMemAddrExists(idx MemIdx) error {
+	if uint32(len(mi.MemAddrs)) <= uint32(idx) {
+		return errors.New("memaddr not found")
+	}
+
+	return nil
+}
+
+func (mi *ModuleInstance) AssertGlobalAddrExists(idx GlobalIdx) error {
+	if uint32(len(mi.GlobalAddrs)) <= uint32(idx) {
+		return errors.New("globaladdr not found")
+	}
+
+	return nil
 }

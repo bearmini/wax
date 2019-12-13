@@ -1,5 +1,9 @@
 package wax
 
+import (
+	"github.com/pkg/errors"
+)
+
 /*
 Memory Instances
 https://webassembly.github.io/multi-value/core/exec/runtime.html#memory-instances
@@ -21,7 +25,43 @@ type MemInst struct {
 	Max  *uint32
 }
 
-func NewMemInstances(m *Module) []MemInst {
-	// TODO: implement
+/*
+Growing memories
+1. Let meminst be the memory instance to grow and 𝑛 the number of pages by which to grow it.
+2. Assert: The length of meminst.data is divisible by the page size 64 Ki.
+3. Let len be 𝑛 added to the length of meminst.data divided by the page size 64 Ki.
+4. If len is larger than 2
+16, then fail.
+5. If meminst.max is not empty and its value is smaller than len, then fail.
+6. Append 𝑛 times 64 Ki bytes with value 0x00 to meminst.data.
+*/
+func (mi *MemInst) TryGrowing(n, hardMax uint32) error {
+	// 1. Let meminst be the memory instance to grow and 𝑛 the number of pages by which to grow it.
+
+	// 2. Assert: The length of meminst.data is divisible by the page size 64 Ki.
+	if len(mi.Data)%PageSize != 0 {
+		return errors.New("invalid mem size")
+	}
+	cur := uint32(len(mi.Data) / PageSize)
+
+	// 3. Let len be 𝑛 added to the length of meminst.data divided by the page size 64 Ki.
+	l := n + cur
+
+	// 4. If len is larger than 2^16, then fail.
+	if l > 65536 {
+		return errors.New("out of memory")
+	}
+
+	// 5. If meminst.max is not empty and its value is smaller than len, then fail.
+	if mi.Max != nil && *mi.Max < l {
+		return errors.New("out of memory")
+	}
+	if hardMax < l {
+		return errors.New("out of memory")
+	}
+
+	// 6. Append 𝑛 times 64 Ki bytes with value 0x00 to meminst.data.
+	mi.Data = append(mi.Data, zeroedMem(n)...)
+
 	return nil
 }
