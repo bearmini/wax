@@ -20,3 +20,8 @@ mut        ::= 0x00 => const
              | 0x01 => var
 */
 type Mut uint8
+
+const (
+	MutConst Mut = iota
+	MutVar
+)

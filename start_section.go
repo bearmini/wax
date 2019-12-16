@@ -1,5 +1,7 @@
 package wax
 
+import "bytes"
+
 /*
 Start Section
 https://webassembly.github.io/multi-value/core/binary/modules.html#start-section
@@ -20,7 +22,9 @@ func ParseStartSection(ber *BinaryEncodingReader, id SectionID) (*StartSection, 
 		return nil, err
 	}
 
-	idx, _, err := ParseFuncIdx(ber)
+	cr := NewBinaryEncodingReader(bytes.NewReader(sb.Content))
+
+	idx, _, err := ParseFuncIdx(cr)
 	if err != nil {
 		return nil, err
 	}

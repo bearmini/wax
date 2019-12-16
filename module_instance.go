@@ -100,6 +100,7 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 	//   (c) Push the frame F_im to the stack.
 	rt := &Runtime{
 		Stack: NewStack(),
+		Store: s,
 	}
 	rt.Stack.PushFrame(f)
 
@@ -133,8 +134,10 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 	}
 
 	// 7. Let F be the frame {module moduleinst, locals ε}.
+	f = &Frame{Module: miim, Locals: []*Val{}}
 
 	// 8. Push the frame F to the stack.
+	rt.Stack.PushFrame(f)
 
 	// 9. For each element segment elem_i in module.elem, do:
 	es := m.GetElementSection()
@@ -188,13 +191,14 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 
 	// 10. For each data segment data_i in module.data, do:
 	ds := m.GetDataSection()
+	doi := []uint32{}
 	if ds != nil {
 		for _, d := range ds.Data {
 			//   (a) Let doval_i be the result of evaluating the expression data_i.offset.
-			if len(d.Offset) < 1 {
-				return nil, errors.New("unsupported data offset expression")
+			doVal, err := rt.evaluateDataExpression(d.Offset)
+			if err != nil {
+				return nil, err
 			}
-			doVal := d.Offset[0]
 
 			//   (b) Assert: due to validation, doval_i is of the form i32.const do_i.
 			if doVal.Opcode() != OpcodeI32Const {
@@ -205,6 +209,7 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 			if !ok {
 				return nil, errors.New("unsupported data offset expression")
 			}
+			doi = append(doi, do.N)
 
 			//   (c) Let memidx_i be the memory index data_i.data.
 			memIdx := d.Data
@@ -237,8 +242,15 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 	}
 
 	// 11. Assert: due to validation, the frame F is now on the top of the stack.
+	if !rt.Stack.IsTopFrame() {
+		return nil, errors.New("invalid data initializer executed")
+	}
 
 	// 12. Pop the frame from the stack.
+	_, err = rt.Stack.Pop()
+	if err != nil {
+		return nil, err
+	}
 
 	// 13. For each element segment elem_i in module.elem, do:
 	if es != nil {
@@ -266,16 +278,14 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 
 	// 14. For each data segment data_i in module.data, do:
 	if ds != nil {
-		for _, d := range ds.Data {
+		for i, d := range ds.Data {
 			//   (a) For each byte b_ij in data_i.init (starting with j = 0), do:
 			//     i. Replace meminst_i.data[do_i + j] with b_ij.
 			memIdx := d.Data
 			ma := mi.MemAddrs[memIdx]
 			meminst := s.Mems[ma]
-			doVal := d.Offset[0]
-			do := doVal.(*InstrI32Const)
 
-			copy(meminst.Data[do.N:], d.Init)
+			copy(meminst.Data[doi[i]:], d.Init)
 		}
 	}
 
@@ -466,6 +476,21 @@ func allocFunc(s *Store, mi *ModuleInstance, f Func) (FuncAddr, error) {
 	return a, nil
 }
 
+func allocImportFunc(s *Store, im *Import, cfg *RuntimeConfig) (FuncAddr, error) {
+	a := s.GetFirstFreeFuncAddr()
+
+	fi := FuncInst{
+		HostCode: HostFunc{
+			Module: im.Mod,
+			Name:   im.Nm,
+		},
+	}
+
+	s.Funcs = append(s.Funcs, fi)
+
+	return a, nil
+}
+
 /*
 Tables
 1. Let tabletype be the table type to allocate.
@@ -493,6 +518,10 @@ func allocTable(s *Store, mi *ModuleInstance, tt TableType) (TableAddr, error) {
 
 	// 6. Return a.
 	return a, nil
+}
+
+func allocImportTable(s *Store, im *Import, cfg *RuntimeConfig) (TableAddr, error) {
+	return 0, errors.New("not implemented")
 }
 
 /*
@@ -525,6 +554,16 @@ func allocMem(s *Store, mt MemType) (MemAddr, error) {
 	return a, nil
 }
 
+func allocImportMem(s *Store, im *Import, cfg *RuntimeConfig) (MemAddr, error) {
+	a := s.GetFirstFreeMemAddr()
+	mi := cfg.getImportMemory(im)
+	if mi == nil {
+		return 0, errors.Errorf("unable to import memory %s.%s", im.Mod, im.Nm)
+	}
+	s.Mems = append(s.Mems, *mi)
+	return a, nil
+}
+
 /*
 Globals
 1. Let globaltype be the global type to allocate and val the value to initialize the global with.
@@ -550,6 +589,16 @@ func allocGlobal(s *Store, gt GlobalType, val Val) (GlobalAddr, error) {
 	s.Globals = append(s.Globals, gi)
 
 	// 6. Return a.
+	return a, nil
+}
+
+func allocImportGlobal(s *Store, im *Import, cfg *RuntimeConfig) (GlobalAddr, error) {
+	a := s.GetFirstFreeGlobalAddr()
+	g := cfg.getImportGlobal(im)
+	if g == nil {
+		return 0, errors.Errorf("unable import global %s.%s", im.Mod, im.Nm)
+	}
+	s.Globals = append(s.Globals, *g)
 	return a, nil
 }
 

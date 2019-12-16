@@ -34,12 +34,14 @@ func ParseData(ber *BinaryEncodingReader) (*Data, error) {
 	size := uint32(size64)
 
 	buf := make([]byte, size)
-	n, err := ber.Read(buf)
-	if err != nil {
-		return nil, err
-	}
-	if uint32(n) != size {
-		return nil, errors.New("insufficient data")
+	if size > 0 {
+		n, err := ber.Read(buf)
+		if err != nil {
+			return nil, err
+		}
+		if uint32(n) != size {
+			return nil, errors.New("insufficient data")
+		}
 	}
 
 	return &Data{

@@ -27,6 +27,7 @@ var opts struct {
 }
 
 var (
+	nModule        int
 	currentModule  *wax.Module
 	currentRuntime *wax.Runtime
 )
@@ -67,6 +68,7 @@ func runTests(dir string) error {
 }
 
 func runTest(path string) error {
+	nModule = 0
 	progress(path)
 
 	f, err := os.Open(path)
@@ -110,13 +112,21 @@ func processSexp(s *sexp.Sexp) error {
 
 	switch first.Atom.Value {
 	case "module":
-		fmt.Printf("compiling module\n")
+		nModule++
+		fmt.Printf("compiling module: %d\n", nModule)
 		m, err := compile(s.String())
 		if err != nil {
 			return err
 		}
 		currentModule = m
-		rt, err := wax.NewRuntime(currentModule, wax.NewRuntimeConfig().MaxMemorySizeInPage(1024))
+
+		cfg := wax.NewRuntimeConfig().MaxMemorySizeInPage(1024)
+		err = prepareImports(m, cfg)
+		if err != nil {
+			return err
+		}
+
+		rt, err := wax.NewRuntime(currentModule, cfg)
 		if err != nil {
 			return err
 		}
@@ -169,6 +179,61 @@ func processSexp(s *sexp.Sexp) error {
 	}
 
 	return nil
+}
+
+func prepareImports(m *wax.Module, cfg *wax.RuntimeConfig) error {
+	imports := m.GetImports()
+	for _, im := range imports {
+		switch im.DescType {
+		case wax.ImportDescTypeFunc:
+			cfg.AddImportFunc(im.Mod, im.Nm)
+		case wax.ImportDescTypeTable:
+			cfg.AddImportTable(im.Mod, im.Nm)
+		case wax.ImportDescTypeMem:
+			b, max, err := provideMemory(im.Mod, im.Nm)
+			if err != nil {
+				return err
+			}
+			cfg.AddImportMemory(im.Mod, im.Nm, b, max)
+		case wax.ImportDescTypeGlobal:
+			v, m, err := provideGlobal(im.Mod, im.Nm)
+			if err != nil {
+				return err
+			}
+			cfg.AddImportGlobal(im.Mod, im.Nm, *v, m)
+		}
+	}
+	return nil
+}
+
+func provideMemory(module, name wax.Name) ([]byte, *uint32, error) {
+	switch module {
+	case "spectest":
+		switch name {
+		case "memory":
+			return make([]byte, wax.PageSize), nil, nil
+		case "global_i32":
+			return make([]byte, wax.PageSize), nil, nil
+		default:
+			return nil, nil, errors.New("unknown memory name")
+		}
+	default:
+		return nil, nil, errors.New("unknown memory module")
+	}
+}
+
+func provideGlobal(module, name wax.Name) (*wax.Val, wax.Mut, error) {
+	switch module {
+	case "spectest":
+		switch name {
+		case "global_i32":
+			return wax.NewValI32(0), wax.MutConst, nil
+		default:
+			return nil, wax.MutConst, errors.New("unknown memory name")
+		}
+	default:
+		return nil, wax.MutConst, errors.New("unknown memory module")
+	}
 }
 
 func eval(s *sexp.Sexp) ([]*wax.Val, error) {

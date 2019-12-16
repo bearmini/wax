@@ -2,6 +2,8 @@ package wax
 
 import (
 	"io"
+
+	"github.com/pkg/errors"
 )
 
 /*
@@ -73,6 +75,8 @@ func ParseSections(ber *BinaryEncodingReader) ([]Section, error) {
 			s, err = ParseCodeSection(ber, id)
 		case DataSectionID:
 			s, err = ParseDataSection(ber, id)
+		default:
+			return nil, errors.Errorf("unknown section id: %#02x (%d)", id, id)
 		}
 		if err != nil {
 			return nil, err

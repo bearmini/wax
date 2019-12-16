@@ -18,7 +18,8 @@ type Runtime struct {
 func NewRuntime(m *Module, cfg *RuntimeConfig) (*Runtime, error) {
 	//s := NewStore(m)
 	s := NewEmptyStore()
-	e, err := createExternValsForImportSection(m)
+
+	e, err := allocImports(s, m, cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -37,16 +38,35 @@ func NewRuntime(m *Module, cfg *RuntimeConfig) (*Runtime, error) {
 	}, nil
 }
 
-func createExternValsForImportSection(m *Module) ([]ExternVal, error) {
+func allocImports(s *Store, m *Module, cfg *RuntimeConfig) ([]ExternVal, error) {
 	result := []ExternVal{}
-
 	imports := m.GetImports()
-	nFunctions := 0
 	for _, im := range imports {
 		switch im.DescType {
 		case ImportDescTypeFunc:
-			fa := FuncAddr(nFunctions)
+			fa, err := allocImportFunc(s, im, cfg)
+			if err != nil {
+				return nil, err
+			}
 			result = append(result, ExternVal{Func: &fa})
+		case ImportDescTypeTable:
+			ta, err := allocImportTable(s, im, cfg)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, ExternVal{Table: &ta})
+		case ImportDescTypeMem:
+			ma, err := allocImportMem(s, im, cfg)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, ExternVal{Mem: &ma})
+		case ImportDescTypeGlobal:
+			ga, err := allocImportGlobal(s, im, cfg)
+			if err != nil {
+				return nil, err
+			}
+			result = append(result, ExternVal{Global: &ga})
 		default:
 			return nil, errors.New("unsupported import desc type")
 		}
@@ -274,14 +294,12 @@ func (rt *Runtime) InvokeFuncAddr(ctx context.Context, a FuncAddr) error {
 			return nil
 		}
 		if ewj, ok := err.(*EndWithJump); ok {
-			ewj.LabelsExited--
-			if ewj.LabelsExited != 0 {
-				return err
+			if ewj.LabelsExited == 0 {
+				return nil
 			}
-			// if we get ewj.LabelsExited == 0, we want to continue exit process
-		} else {
 			return err
 		}
+		return err
 	}
 
 	err = rt.exitInstructionsWithLabel()
@@ -471,4 +489,35 @@ func (rt *Runtime) evaluateInitializerExpression(initExpr Expr) (*Val, error) {
 	}
 
 	return rt.Stack.PopValue()
+}
+
+func (rt *Runtime) evaluateDataExpression(expr Expr) (Instr, error) {
+	if len(expr) != 2 {
+		return nil, errors.New("unsupported data expression")
+	}
+
+	if expr[1].Opcode() != OpcodeEnd {
+		return nil, errors.New("unsupported data expression")
+	}
+
+	switch expr[0].Opcode() {
+	case OpcodeI32Const:
+		return expr[0], nil
+	case OpcodeGlobalGet:
+		_, err := expr[0].Perform(context.Background(), rt)
+		if err != nil {
+			return nil, err
+		}
+		err = rt.Stack.AssertTopIsValueI32()
+		if err != nil {
+			return nil, err
+		}
+		v, err := rt.Stack.PopValue()
+		if err != nil {
+			return nil, err
+		}
+		return NewInstrI32Const(v.MustGetI32(), []byte{ /*we can skip this because this field will be used only when disassemble*/ }), nil
+	default:
+		return nil, errors.New("unsupported init expression")
+	}
 }
