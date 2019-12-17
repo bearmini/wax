@@ -233,6 +233,28 @@ func (m *Module) GetImports() []*Import {
 	return is.Imports
 }
 
+func (m *Module) GetImportedTableCount() uint32 {
+	imports := m.GetImports()
+	n := uint32(0)
+	for _, i := range imports {
+		if i.DescType == ImportDescTypeTable {
+			n++
+		}
+	}
+	return n
+}
+
+func (m *Module) GetImportedGlobalCount() uint32 {
+	imports := m.GetImports()
+	n := uint32(0)
+	for _, i := range imports {
+		if i.DescType == ImportDescTypeGlobal {
+			n++
+		}
+	}
+	return n
+}
+
 func (m *Module) GetFuncs() []Func {
 	fs := m.GetFunctionSection()
 	if fs == nil {

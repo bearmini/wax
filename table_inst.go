@@ -27,8 +27,3 @@ type TableInst struct {
 }
 
 type FuncElem *FuncAddr
-
-func NewTableInstances(m *Module) []TableInst {
-	// TODO: implement
-	return nil
-}

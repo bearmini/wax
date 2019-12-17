@@ -27,9 +27,10 @@ var opts struct {
 }
 
 var (
-	nModule        int
-	currentModule  *wax.Module
-	currentRuntime *wax.Runtime
+	nModule            int
+	currentRuntime     *wax.Runtime
+	runtimesWithID     map[string]*wax.Runtime = make(map[string]*wax.Runtime)
+	registeredRuntimes map[string]*wax.Runtime = make(map[string]*wax.Runtime)
 )
 
 func main() {
@@ -118,7 +119,6 @@ func processSexp(s *sexp.Sexp) error {
 		if err != nil {
 			return err
 		}
-		currentModule = m
 
 		cfg := wax.NewRuntimeConfig().MaxMemorySizeInPage(1024)
 		err = prepareImports(m, cfg)
@@ -126,17 +126,55 @@ func processSexp(s *sexp.Sexp) error {
 			return err
 		}
 
-		rt, err := wax.NewRuntime(currentModule, cfg)
+		rt, err := wax.NewRuntime(m, cfg)
 		if err != nil {
 			return err
 		}
+
+		rememberRuntimeIfNeeded(s, rt)
 		currentRuntime = rt
+
+	case "register":
+		if len(s.Children) < 3 {
+			return errors.New("unsupported register")
+		}
+
+		if s.Children[1].Atom == nil || s.Children[2].Atom == nil {
+			return errors.New("unsupported register")
+		}
+		second := s.Children[1].Atom
+		third := s.Children[2].Atom
+
+		if second.Type != sexp.TokenTypeString || third.Type != sexp.TokenTypeSymbol {
+			return errors.New("unsupported register")
+		}
+
+		moduleName := strings.Trim(second.Value, `"`)
+		moduleID := third.Value
+
+		rt, ok := runtimesWithID[moduleID]
+		if !ok {
+			return errors.Errorf("module not found: %s", moduleID)
+		}
+		registeredRuntimes[moduleName] = rt
+
+	case "invoke":
+		fmt.Printf("-> %s\n", s.String())
+		if len(s.Children) < 2 {
+			return errors.Errorf("insufficient arguments: %s", s.String())
+		}
+
+		_, err := eval(s)
+		if err != nil {
+			return err
+		}
+
 	case "assert_return":
 		fmt.Printf("-> %s\n", s.String())
 		if len(s.Children) < 2 {
 			return errors.Errorf("insufficient arguments: %s", s.String())
 		}
-		invoke := s.Children[1]
+		invokeOrGet := s.Children[1]
 
 		var expectedVal *wax.Val
 		if len(s.Children) > 2 {
@@ -148,7 +186,7 @@ func processSexp(s *sexp.Sexp) error {
 			expectedVal = ev
 		}
 
-		actual, err := eval(invoke)
+		actual, err := eval(invokeOrGet)
 		if err != nil {
 			return err
 		}
@@ -160,6 +198,7 @@ func processSexp(s *sexp.Sexp) error {
 				return errors.Errorf("assertion failed: %s\nExpected: %+v\nActual:   %+v\n", s.String(), expectedVal, actual[0])
 			}
 		}
+
 	case "assert_trap":
 		fmt.Printf("skipping assert_trap\n")
 	case "assert_malformed":
@@ -181,6 +220,32 @@ func processSexp(s *sexp.Sexp) error {
 	return nil
 }
 
+func rememberRuntimeIfNeeded(s *sexp.Sexp, rt *wax.Runtime) {
+	if !doesModuleSexpHaveModuleID(s) {
+		return
+	}
+
+	moduleID := s.Children[1].Atom.Value
+
+	runtimesWithID[moduleID] = rt
+}
+
+func doesModuleSexpHaveModuleID(s *sexp.Sexp) bool {
+	if len(s.Children) < 2 {
+		return false
+	}
+
+	if s.Children[1].Atom == nil {
+		return false
+	}
+
+	if s.Children[1].Atom.Type != sexp.TokenTypeSymbol {
+		return false
+	}
+
+	return true
+}
+
 func prepareImports(m *wax.Module, cfg *wax.RuntimeConfig) error {
 	imports := m.GetImports()
 	for _, im := range imports {
@@ -188,7 +253,11 @@ func prepareImports(m *wax.Module, cfg *wax.RuntimeConfig) error {
 		case wax.ImportDescTypeFunc:
 			cfg.AddImportFunc(im.Mod, im.Nm)
 		case wax.ImportDescTypeTable:
-			cfg.AddImportTable(im.Mod, im.Nm)
+			e, max, err := provideTable(im.Mod, im.Nm)
+			if err != nil {
+				return err
+			}
+			cfg.AddImportTable(im.Mod, im.Nm, e, max)
 		case wax.ImportDescTypeMem:
 			b, max, err := provideMemory(im.Mod, im.Nm)
 			if err != nil {
@@ -204,6 +273,33 @@ func prepareImports(m *wax.Module, cfg *wax.RuntimeConfig) error {
 		}
 	}
 	return nil
+}
+
+func provideTable(module, name wax.Name) ([]wax.FuncElem, *uint32, error) {
+	switch module {
+	case "spectest":
+		switch name {
+		case "table":
+			min := 10
+			return make([]wax.FuncElem, min), nil, nil
+		case "global_i32":
+			min := 10
+			return make([]wax.FuncElem, min), nil, nil
+		default:
+			return nil, nil, errors.New("unknown table name")
+		}
+	default:
+		rt, ok := registeredRuntimes[string(module)]
+		if !ok {
+			return nil, nil, errors.Errorf("unknown table module: %s", module)
+		}
+
+		ti, err := rt.GetExportedTable(name)
+		if err != nil {
+			return nil, nil, err
+		}
+		return ti.Elem, ti.Max, nil
+	}
 }
 
 func provideMemory(module, name wax.Name) ([]byte, *uint32, error) {
@@ -252,26 +348,105 @@ func eval(s *sexp.Sexp) ([]*wax.Val, error) {
 			return nil, errors.Errorf("insufficient arguments: %s", s.String())
 		}
 		second := s.Children[1]
-		if second.Atom == nil || second.Atom.Type != sexp.TokenTypeString {
-			return nil, errors.New("unexpected sexp")
+		if second.Atom == nil {
+			return nil, errors.New("unexpected invoke format")
 		}
-		fname := strings.Trim(second.Atom.Value, `"`)
 
-		fa, err := currentRuntime.FindFuncAddr(fname)
+		// we have 2 formats:
+		//  (invoke "funcName" (arg1) (arg2)...)
+		//  (invoke moduleID "funcName" (arg1) (arg2)...)
+		moduleID := ""
+		funcName := ""
+		args := []*sexp.Sexp{}
+		if second.Atom.Type == sexp.TokenTypeString {
+			moduleID = ""
+			funcName = strings.Trim(second.Atom.Value, `"`)
+			args = append(args, s.Children[2:]...)
+		}
+		if second.Atom.Type == sexp.TokenTypeSymbol && len(s.Children) >= 3 {
+			third := s.Children[2]
+			if third.Atom == nil || third.Atom.Type != sexp.TokenTypeString {
+				return nil, errors.New("unexpected invoke format")
+			}
+			moduleID = second.Atom.Value
+			funcName = strings.Trim(third.Atom.Value, `"`)
+			args = append(args, s.Children[3:]...)
+		}
+
+		if moduleID == "" && funcName == "" {
+			return nil, errors.New("unexpected invoke format")
+		}
+
+		rt := currentRuntime
+		if moduleID != "" {
+			rtWithID, ok := runtimesWithID[moduleID]
+			if !ok {
+				return nil, errors.Errorf("module not found: %s", moduleID)
+			}
+			rt = rtWithID
+		}
+
+		fa, err := rt.FindFuncAddr(funcName)
 		if err != nil {
 			return nil, err
 		}
 
-		args := []*wax.Val{}
-		for _, arg := range s.Children[2:] {
+		argVals := []*wax.Val{}
+		for _, arg := range args {
 			v, err := evalConst(arg)
 			if err != nil {
 				return nil, err
 			}
-			args = append(args, v)
+			argVals = append(argVals, v)
 		}
 		ctx := context.Background()
-		return currentRuntime.InvokeFunc(ctx, *fa, args)
+		return rt.InvokeFunc(ctx, *fa, argVals)
+
+	case "get":
+		if len(s.Children) < 2 {
+			return nil, errors.Errorf("insufficient arguments: %s", s.String())
+		}
+		second := s.Children[1]
+		if second.Atom == nil {
+			return nil, errors.New("unexpected get format")
+		}
+
+		// we have 2 formats:
+		//  (get "globalName")
+		//  (get moduleID "globalName")
+		moduleID := ""
+		globalName := ""
+		if second.Atom.Type == sexp.TokenTypeString {
+			globalName = strings.Trim(second.Atom.Value, `"`)
+		}
+		if second.Atom.Type == sexp.TokenTypeSymbol {
+			third := s.Children[2]
+			if third.Atom == nil || third.Atom.Type != sexp.TokenTypeString {
+				return nil, errors.New("unexpected invoke format")
+			}
+			moduleID = second.Atom.Value
+			globalName = strings.Trim(third.Atom.Value, `"`)
+		}
+
+		if moduleID == "" && globalName == "" {
+			return nil, errors.New("unexpected get format")
+		}
+
+		rt := currentRuntime
+		if moduleID != "" {
+			rtWithID, ok := runtimesWithID[moduleID]
+			if !ok {
+				return nil, errors.Errorf("module not found: %s", moduleID)
+			}
+			rt = rtWithID
+		}
+		v, err := rt.GetExportedGlobal(wax.Name(globalName))
+		if err != nil {
+			return nil, err
+		}
+
+		return []*wax.Val{&v.Value}, nil
+
 	default:
 		return nil, errors.New("not implemented")
 	}

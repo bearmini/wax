@@ -18,18 +18,18 @@ store ::= {
 	globals globalinst* }
 */
 type Store struct {
-	Funcs   []FuncInst
-	Tables  []TableInst
-	Mems    []MemInst
-	Globals []GlobalInst
+	Funcs   []*FuncInst
+	Tables  []*TableInst
+	Mems    []*MemInst
+	Globals []*GlobalInst
 }
 
 func NewEmptyStore() *Store {
 	return &Store{
-		Funcs:   []FuncInst{},
-		Tables:  []TableInst{},
-		Mems:    []MemInst{},
-		Globals: []GlobalInst{},
+		Funcs:   []*FuncInst{},
+		Tables:  []*TableInst{},
+		Mems:    []*MemInst{},
+		Globals: []*GlobalInst{},
 	}
 }
 

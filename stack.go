@@ -110,6 +110,19 @@ func (s *Stack) AssertTopIsValueI32() error {
 	return nil
 }
 
+func (s *Stack) TopValues(n uint32) ([]*Val, error) {
+	result := []*Val{}
+	nn := n
+	for i := len(s.entries) - 1; i >= 0 && nn > 0; i-- {
+		if s.entries[i].Value == nil {
+			return nil, errors.Errorf("%d values are not on top of stack", n)
+		}
+		result = append(result, s.entries[i].Value)
+		nn--
+	}
+	return result, nil
+}
+
 func (s *Stack) GetLabelAt(labelIdx LabelIdx) (*Label, error) {
 	n := 0
 	for i := len(s.entries) - 1; i >= 0; i-- {

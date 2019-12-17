@@ -2,6 +2,8 @@ package wax
 
 import (
 	"context"
+
+	"github.com/pkg/errors"
 )
 
 type InstrSelect struct {
@@ -38,18 +40,24 @@ func (instr *InstrSelect) Perform(ctx context.Context, rt *Runtime) (*Label, err
 	}
 
 	// 3. Assert: due to validation, two more values (of the same value type) are on the top of the stack.
-	err = rt.Stack.AssertTopIsValueI32()
+	vals, err := rt.Stack.TopValues(2)
 	if err != nil {
 		return nil, err
+	}
+	t1, err := vals[0].GetType()
+	if err != nil {
+		return nil, err
+	}
+	t2, err := vals[1].GetType()
+	if err != nil {
+		return nil, err
+	}
+	if *t1 != *t2 {
+		return nil, errors.New("types of two values on top of stack do not match")
 	}
 
 	// 4. Pop the value val 2 from the stack.
 	v2, err := rt.Stack.PopValue()
-	if err != nil {
-		return nil, err
-	}
-
-	err = rt.Stack.AssertTopIsValueI32()
 	if err != nil {
 		return nil, err
 	}

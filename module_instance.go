@@ -141,13 +141,14 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 
 	// 9. For each element segment elem_i in module.elem, do:
 	es := m.GetElementSection()
+	eoi := []uint32{}
 	if es != nil {
 		for _, e := range es.Elem {
 			//   (a) Let eoval_i be the result of evaluating the expression elem_i.offset.
-			if len(e.Offset) < 1 {
-				return nil, errors.New("unsupported elem offset expression")
+			eoVal, err := rt.evaluateElemOffsetExpression(e.Offset)
+			if err != nil {
+				return nil, err
 			}
-			eoVal := e.Offset[0]
 
 			//   (b) Assert: due to validation, eoval_i is of the form i32.const eo_i.
 			if eoVal.Opcode() != OpcodeI32Const {
@@ -158,6 +159,7 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 			if !ok {
 				return nil, errors.New("unsupported elem offset expression")
 			}
+			eoi = append(eoi, eo.N)
 
 			//   (c) Let tableidx_i be the table index elem_i.table.
 			tableIdx := e.Table
@@ -195,7 +197,7 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 	if ds != nil {
 		for _, d := range ds.Data {
 			//   (a) Let doval_i be the result of evaluating the expression data_i.offset.
-			doVal, err := rt.evaluateDataExpression(d.Offset)
+			doVal, err := rt.evaluateDataOffsetExpression(d.Offset)
 			if err != nil {
 				return nil, err
 			}
@@ -254,7 +256,7 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 
 	// 13. For each element segment elem_i in module.elem, do:
 	if es != nil {
-		for _, e := range es.Elem {
+		for i, e := range es.Elem {
 			//   (a) For each function index funcidx_ij in elem_i.init (starting with 𝑗 = 0), do:
 			for j, fi := range e.Init {
 				//     i. Assert: due to validation, moduleinst.funcaddrs[funcidx_ij] exists.
@@ -266,12 +268,10 @@ func NewModuleInstance(m *Module, s *Store, evs []ExternVal) (*ModuleInstance, e
 				fa := mi.FuncAddrs[fi]
 
 				//     iii. Replace tableinst_i.elem[eo_i + j] with funcaddr_ij.
-				eoVal := e.Offset[0]
-				eo := eoVal.(*InstrI32Const)
 				tableIdx := e.Table
 				tableaddr := mi.TableAddrs[tableIdx]
 				tableinst := s.Tables[tableaddr]
-				tableinst.Elem[eo.N+uint32(j)] = &fa
+				tableinst.Elem[eoi[i]+uint32(j)] = &fa
 			}
 		}
 	}
@@ -463,7 +463,7 @@ func allocFunc(s *Store, mi *ModuleInstance, f Func) (FuncAddr, error) {
 	ft := mi.Types[f.Type]
 
 	// 4. Let `funcinst` be the function instance {type functype, module moduleinst, code func}.
-	fi := FuncInst{
+	fi := &FuncInst{
 		Type:   ft,
 		Module: mi,
 		Code:   f,
@@ -479,7 +479,7 @@ func allocFunc(s *Store, mi *ModuleInstance, f Func) (FuncAddr, error) {
 func allocImportFunc(s *Store, im *Import, cfg *RuntimeConfig) (FuncAddr, error) {
 	a := s.GetFirstFreeFuncAddr()
 
-	fi := FuncInst{
+	fi := &FuncInst{
 		HostCode: HostFunc{
 			Module: im.Mod,
 			Name:   im.Nm,
@@ -508,7 +508,7 @@ func allocTable(s *Store, mi *ModuleInstance, tt TableType) (TableAddr, error) {
 	a := s.GetFirstFreeTableAddr()
 
 	// 4. Let tableinst be the table instance {elem (ε)^n, max m?} with n empty elements.
-	ti := TableInst{
+	ti := &TableInst{
 		Elem: make([]FuncElem, tt.Limits.Min),
 		Max:  tt.Limits.Max,
 	}
@@ -521,7 +521,14 @@ func allocTable(s *Store, mi *ModuleInstance, tt TableType) (TableAddr, error) {
 }
 
 func allocImportTable(s *Store, im *Import, cfg *RuntimeConfig) (TableAddr, error) {
-	return 0, errors.New("not implemented")
+	a := s.GetFirstFreeTableAddr()
+
+	ti := cfg.getImportTable(im)
+	if ti == nil {
+		return 0, errors.Errorf("unable to import table %s.%s", im.Mod, im.Nm)
+	}
+	s.Tables = append(s.Tables, ti)
+	return a, nil
 }
 
 /*
@@ -542,7 +549,7 @@ func allocMem(s *Store, mt MemType) (MemAddr, error) {
 	a := s.GetFirstFreeMemAddr()
 
 	// 4.  Let meminst be the memory instance {data (0x00)^n・64Ki, max m^?} that contains n pages of zeroed bytes.
-	mi := MemInst{
+	mi := &MemInst{
 		Data: zeroedMem(mt.Limits.Min),
 		Max:  mt.Limits.Max,
 	}
@@ -560,7 +567,7 @@ func allocImportMem(s *Store, im *Import, cfg *RuntimeConfig) (MemAddr, error) {
 	if mi == nil {
 		return 0, errors.Errorf("unable to import memory %s.%s", im.Mod, im.Nm)
 	}
-	s.Mems = append(s.Mems, *mi)
+	s.Mems = append(s.Mems, mi)
 	return a, nil
 }
 
@@ -580,7 +587,7 @@ func allocGlobal(s *Store, gt GlobalType, val Val) (GlobalAddr, error) {
 	a := s.GetFirstFreeGlobalAddr()
 
 	// 4. Let globalinst be the global instance {value val, mut mut}.
-	gi := GlobalInst{
+	gi := &GlobalInst{
 		Value: val,
 		Mut:   gt.Mut,
 	}
@@ -598,7 +605,7 @@ func allocImportGlobal(s *Store, im *Import, cfg *RuntimeConfig) (GlobalAddr, er
 	if g == nil {
 		return 0, errors.Errorf("unable import global %s.%s", im.Mod, im.Nm)
 	}
-	s.Globals = append(s.Globals, *g)
+	s.Globals = append(s.Globals, g)
 	return a, nil
 }
 

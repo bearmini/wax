@@ -38,6 +38,50 @@ func NewRuntime(m *Module, cfg *RuntimeConfig) (*Runtime, error) {
 	}, nil
 }
 
+func (rt *Runtime) GetExportedTable(name Name) (*TableInst, error) {
+	es := rt.Module.GetExportSection()
+	if es == nil {
+		return nil, errors.New("no exports")
+	}
+
+	for _, e := range es.Exports {
+		if e.DescType != ExportDescTypeTable {
+			continue
+		}
+
+		ei := e.Desc.(*TableIdx)
+		nit := rt.Module.GetImportedTableCount()
+		if uint32(len(rt.Store.Tables)) <= uint32(*ei)+nit {
+			return nil, errors.New("exported table not found")
+		}
+		return rt.Store.Tables[uint32(*ei)+nit], nil
+	}
+
+	return nil, errors.Errorf("exported table not found: %s", name)
+}
+
+func (rt *Runtime) GetExportedGlobal(name Name) (*GlobalInst, error) {
+	es := rt.Module.GetExportSection()
+	if es == nil {
+		return nil, errors.New("no exports")
+	}
+
+	for _, e := range es.Exports {
+		if e.DescType != ExportDescTypeGlobal {
+			continue
+		}
+
+		gi := e.Desc.(*GlobalIdx)
+		nig := rt.Module.GetImportedGlobalCount()
+		if uint32(len(rt.Store.Globals)) <= uint32(*gi)+nig {
+			return nil, errors.New("exported table not found")
+		}
+		return rt.Store.Globals[uint32(*gi)+nig], nil
+	}
+
+	return nil, errors.Errorf("exported table not found: %s", name)
+}
+
 func allocImports(s *Store, m *Module, cfg *RuntimeConfig) ([]ExternVal, error) {
 	result := []ExternVal{}
 	imports := m.GetImports()
@@ -491,13 +535,13 @@ func (rt *Runtime) evaluateInitializerExpression(initExpr Expr) (*Val, error) {
 	return rt.Stack.PopValue()
 }
 
-func (rt *Runtime) evaluateDataExpression(expr Expr) (Instr, error) {
+func (rt *Runtime) evaluateElemOffsetExpression(expr Expr) (Instr, error) {
 	if len(expr) != 2 {
-		return nil, errors.New("unsupported data expression")
+		return nil, errors.New("unsupported elem offset expression")
 	}
 
 	if expr[1].Opcode() != OpcodeEnd {
-		return nil, errors.New("unsupported data expression")
+		return nil, errors.New("unsupported elem offset expression")
 	}
 
 	switch expr[0].Opcode() {
@@ -518,6 +562,37 @@ func (rt *Runtime) evaluateDataExpression(expr Expr) (Instr, error) {
 		}
 		return NewInstrI32Const(v.MustGetI32(), []byte{ /*we can skip this because this field will be used only when disassemble*/ }), nil
 	default:
-		return nil, errors.New("unsupported init expression")
+		return nil, errors.New("unsupported elem offset expression")
+	}
+}
+
+func (rt *Runtime) evaluateDataOffsetExpression(expr Expr) (Instr, error) {
+	if len(expr) != 2 {
+		return nil, errors.New("unsupported data offset expression")
+	}
+
+	if expr[1].Opcode() != OpcodeEnd {
+		return nil, errors.New("unsupported data offset expression")
+	}
+
+	switch expr[0].Opcode() {
+	case OpcodeI32Const:
+		return expr[0], nil
+	case OpcodeGlobalGet:
+		_, err := expr[0].Perform(context.Background(), rt)
+		if err != nil {
+			return nil, err
+		}
+		err = rt.Stack.AssertTopIsValueI32()
+		if err != nil {
+			return nil, err
+		}
+		v, err := rt.Stack.PopValue()
+		if err != nil {
+			return nil, err
+		}
+		return NewInstrI32Const(v.MustGetI32(), []byte{ /*we can skip this because this field will be used only when disassemble*/ }), nil
+	default:
+		return nil, errors.New("unsupported data offset expression")
 	}
 }

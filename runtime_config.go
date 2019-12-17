@@ -39,14 +39,14 @@ func (c *RuntimeConfig) AddImportFunc(module, name Name) *RuntimeConfig {
 	return c
 }
 
-func (c *RuntimeConfig) AddImportTable(module, name Name) *RuntimeConfig {
-	/*
-		c.importTable[module][name] = TableInst{
-			Elem:
-			Max:
-		}
-	*/
-
+func (c *RuntimeConfig) AddImportTable(module, name Name, e []FuncElem, max *uint32) *RuntimeConfig {
+	if _, ok := c.importTable[module]; !ok {
+		c.importTable[module] = make(map[Name]TableInst)
+	}
+	c.importTable[module][name] = TableInst{
+		Elem: e,
+		Max:  max,
+	}
 	return c
 }
 
