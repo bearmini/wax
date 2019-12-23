@@ -132,19 +132,11 @@ func (rt *Runtime) FindFuncAddr(fname string) (*FuncAddr, error) {
 		return nil, errors.Errorf("func not found: %s", fname)
 	}
 
-	nif := uint32(0) // number of imported functions
-	is := rt.Module.GetImportSection()
-	if is != nil {
-		nif = is.GetFuncImportsCount()
-	}
-
-	if uint32(*fi) >= uint32(len(rt.Store.Funcs))+nif {
+	if uint32(*fi) >= uint32(len(rt.Store.Funcs)) {
 		return nil, errors.Errorf("out of range")
 	}
 
-	var fa FuncAddr
-	fa = FuncAddr(uint32(*fi) - nif)
-
+	fa := FuncAddr(uint32(*fi))
 	return &fa, nil
 }
 
@@ -329,7 +321,7 @@ func (rt *Runtime) InvokeFuncAddr(ctx context.Context, a FuncAddr) error {
 	}
 
 	// 11. Let L be the label whose arity is m and whose continuation is the end of the function.
-	l := NewLabel(m, f.Code.Body[len(f.Code.Body)-1:])
+	l := NewLabel(m, []Instr{})
 
 	// 12. Enter the instruction sequnce instr* with label L.
 	err = rt.enterInstructionsWithLabel(ctx, l, instr)

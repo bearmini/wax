@@ -251,6 +251,10 @@ func prepareImports(m *wax.Module, cfg *wax.RuntimeConfig) error {
 	for _, im := range imports {
 		switch im.DescType {
 		case wax.ImportDescTypeFunc:
+			err := provideFunc(im.Mod, im.Nm)
+			if err != nil {
+				return err
+			}
 			cfg.AddImportFunc(im.Mod, im.Nm)
 		case wax.ImportDescTypeTable:
 			e, max, err := provideTable(im.Mod, im.Nm)
@@ -272,6 +276,10 @@ func prepareImports(m *wax.Module, cfg *wax.RuntimeConfig) error {
 			cfg.AddImportGlobal(im.Mod, im.Nm, *v, m)
 		}
 	}
+	return nil
+}
+
+func provideFunc(module, name wax.Name) error {
 	return nil
 }
 
